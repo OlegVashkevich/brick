@@ -210,7 +210,7 @@ $this->classList($classes); // Создание строки CSS классов
 ```
 ## Интеграция с Cement DI-контейнером
 
-Brick отлично работает с [Cement](https://github.com/olegv/cement) - DI-контейнером:
+Brick отлично работает с [Cement](https://github.com/OlegVashkevich/cement) - DI-контейнером:
 
 ```php
 use OlegV\Cement\Cement;
