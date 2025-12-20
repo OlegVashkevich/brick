@@ -220,7 +220,7 @@ use Components\ProductCard\ProductCard;
 $cement = new Cement();
 
 // Замешиваем компоненты
-$cement->mixAll([
+$cement->addAll([
     Button::class => [
         'buy' => fn($c) => new Button('Купить', 'primary'),
         'cart' => fn($c) => new Button('В корзину', 'secondary'),
