@@ -41,11 +41,6 @@ use Throwable;
 abstract class Brick
 {
     /**
-     * Версия библиотеки
-     */
-    public const VERSION = '1.0.0';
-
-    /**
      * Директория компонента (где лежат template.php, style.css, script.js)
      */
     protected string $dir;
@@ -57,6 +52,11 @@ abstract class Brick
     private static array $jsAssets = [];
 
     /**
+     * Кэш всех данных компонента (статический, на уровне класса)
+     */
+    private static array $classCache = [];
+
+    /**
      * Конструктор компонента
      *
      * Автоматически находит файлы компонента в той же директории
@@ -65,46 +65,48 @@ abstract class Brick
      */
     public function __construct()
     {
-        // Определяем директорию где лежит файл класса
-        $reflection = new ReflectionClass($this);
-        $this->dir = dirname($reflection->getFileName());
-
-        // Проверяем наличие обязательного файла шаблона
-        $templatePath = $this->dir . '/template.php';
-        if (!file_exists($templatePath)) {
-            $className = (new ReflectionClass($this))->getShortName();
-            throw new RuntimeException(
-                "Компонент '$className' должен иметь файл template.php в: $this->dir"
-            );
-        }
-
-        // Регистрируем ассеты компонента
-        $this->registerAssets();
-    }
-
-    /**
-     * Регистрирует CSS и JavaScript компонента
-     */
-    private function registerAssets(): void
-    {
         $className = static::class;
 
-        // Регистрируем ассеты только один раз для каждого класса компонента
-        if (isset(self::$cssAssets[$className]) || isset(self::$jsAssets[$className])) {
-            return;
+        // ВСЁ за один проход - все операции только один раз на класс!
+        if (!isset(self::$classCache[$className])) {
+            $reflection = new ReflectionClass($className);
+            $dir = dirname($reflection->getFileName());
+            $templatePath = $dir . '/template.php';
+
+            // Валидация шаблона
+            if (!file_exists($templatePath)) {
+                throw new RuntimeException(
+                    "Компонент '{$reflection->getShortName()}' требует template.php в: $dir"
+                );
+            }
+
+            // Загрузка ассетов
+            $css = file_exists($dir . '/style.css')
+                ? file_get_contents($dir . '/style.css')
+                : null;
+            $js = file_exists($dir . '/script.js')
+                ? file_get_contents($dir . '/script.js')
+                : null;
+
+            // Сохраняем ВСЕ данные о классе
+            self::$classCache[$className] = [
+                'dir' => $dir,
+                'css' => $css,
+                'js' => $js,
+                'template_mtime' => filemtime($templatePath),
+                'template_content' => null, // Ленивая загрузка при первом рендере
+            ];
+
+            // Регистрируем ассеты в статических реестрах
+            if ($css !== null) {
+                self::$cssAssets[$className] = $css;
+            }
+            if ($js !== null) {
+                self::$jsAssets[$className] = $js;
+            }
         }
 
-        // CSS (опционально)
-        $cssPath = $this->dir . '/style.css';
-        if (file_exists($cssPath)) {
-            self::$cssAssets[$className] = file_get_contents($cssPath);
-        }
-
-        // JavaScript (опционально)
-        $jsPath = $this->dir . '/script.js';
-        if (file_exists($jsPath)) {
-            self::$jsAssets[$className] = file_get_contents($jsPath);
-        }
+        $this->dir = self::$classCache[$className]['dir'];
     }
 
     /**
@@ -208,5 +210,18 @@ abstract class Brick
     {
         self::$cssAssets = [];
         self::$jsAssets = [];
+        self::$classCache = [];
+    }
+
+    /**
+     * Получить статистику кэша (для отладки)
+     */
+    public static function getCacheStats(): array
+    {
+        return [
+            'cached_classes' => count(self::$classCache),
+            'css_assets' => count(self::$cssAssets),
+            'js_assets' => count(self::$jsAssets),
+        ];
     }
 }
