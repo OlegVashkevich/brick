@@ -210,7 +210,7 @@ $this->classList($classes); // Создание строки CSS классов
 ```
 ## Интеграция с Cement DI-контейнером
 
-Brick отлично работает с [Cement](https://github.com/olegv/cement) - DI-контейнером:
+Brick отлично работает с [Cement](https://github.com/OlegVashkevich/cement) - DI-контейнером:
 
 ```php
 use OlegV\Cement\Cement;
@@ -220,18 +220,18 @@ use Components\ProductCard\ProductCard;
 $cement = new Cement();
 
 // Замешиваем компоненты
-$cement->mixAll([
+$cement->addAll([
     Button::class => [
         'buy' => fn($c) => new Button('Купить', 'primary'),
         'cart' => fn($c) => new Button('В корзину', 'secondary'),
     ],
     
-    ProductCard::class => fn($c) => new ProductCard(
-        id: 1,
-        title: 'Товар',
-        price: 99.99,
-        imageUrl: '/product.jpg',
-        button: $c->get(Button::class, ['variant' => 'buy'])
+    ProductCard::class =>  fn($c, $p) => new ProductCard(
+        id: $p['id'] ?? 1,
+        title: $p['title'] ?? 'Товар',
+        price: $p['price'] ?? 99.99,
+        imageUrl: $p['imageUrl'] ?? '/product.jpg',
+        button: $p['button'] ?? $c->get(Button::class, ['variant' => 'buy'])
     ),
 ]);
 
