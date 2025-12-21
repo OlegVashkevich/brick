@@ -127,7 +127,8 @@ abstract class Brick
 
         try {
             // $this доступен в шаблоне как $component
-            $component = $this;
+            //TODO: удалить для однозначности ?
+            //$component = $this;
 
             include $this->dir . '/template.php';
         } catch (Throwable $e) {

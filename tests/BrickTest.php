@@ -122,7 +122,7 @@ class BrickTest extends TestCase
     {
         $this->createTestComponent('ValidComponent', [
             'php' => '<?php namespace OlegV\Tests; class ValidComponent extends \OlegV\Brick { public function __construct(public string $title = "test") { parent::__construct(); } }',
-            'template' => '<div class="test"><?= $this->e($component->title) ?></div>'
+            'template' => '<div class="test"><?= $this->e($this->title) ?></div>'
         ]);
 
         // Подключаем файл с классом
@@ -138,7 +138,7 @@ class BrickTest extends TestCase
     {
         $this->createTestComponent('ToStringComponent', [
             'php' => '<?php namespace OlegV\Tests; class ToStringComponent extends \OlegV\Brick { public function __construct(public string $value = "test") { parent::__construct(); } }',
-            'template' => '<span><?= $component->value ?></span>'
+            'template' => '<span><?= $this->value ?></span>'
         ]);
 
         require_once $this->testComponentsDir . '/ToStringComponent/ToStringComponent.php';
@@ -155,7 +155,7 @@ class BrickTest extends TestCase
                 public function __construct(public string $content = "") { parent::__construct(); } 
                 public function testEscape() { return $this->e($this->content); }
             }',
-            'template' => '<div><?= $component->testEscape() ?></div>'
+            'template' => '<div><?= $this->testEscape() ?></div>'
         ]);
 
         require_once $this->testComponentsDir . '/EscapeComponent/EscapeComponent.php';
@@ -176,7 +176,7 @@ class BrickTest extends TestCase
                     return $this->classList(["btn", "primary", "", null, false ? "hidden" : "visible"]); 
                 }
             }',
-            'template' => '<div class="<?= $component->testClassList() ?>">test</div>'
+            'template' => '<div class="<?= $this->testClassList() ?>">test</div>'
         ]);
 
         require_once $this->testComponentsDir . '/ClassListComponent/ClassListComponent.php';
@@ -302,7 +302,7 @@ class BrickTest extends TestCase
             'php' => '<?php namespace OlegV\Tests; class CachedComponent extends \OlegV\Brick { 
                 public function __construct(public int $id = 0) { parent::__construct(); } 
             }',
-            'template' => '<div id="<?= $component->id ?>">cached</div>'
+            'template' => '<div id="<?= $this->id ?>">cached</div>'
         ]);
 
         require_once $this->testComponentsDir . '/CachedComponent/CachedComponent.php';
