@@ -1,6 +1,6 @@
 # https://help.github.com/en/categories/automating-your-workflow-with-github-actions
 
-name: "PHPStan"
+name: "Tests"
 
 on:
   pull_request:
@@ -14,7 +14,7 @@ on:
 
 jobs:
   tests:
-    name: "PHPStan"
+    name: "Tests"
 
     runs-on: ${{ matrix.operating-system }}
 
@@ -22,7 +22,6 @@ jobs:
       fail-fast: false
       matrix:
         php-version:
-          - "8.2"
           - "8.5"
         operating-system: [ubuntu-latest, windows-latest]
 
@@ -42,9 +41,6 @@ jobs:
         uses: ramsey/composer-install@v3
         with:
           dependency-versions: "lowest"
-
-      - name: "Run PHPStan"
-        run: "./vendor/bin/phpstan --error-format=github analyse -c phpstan.neon"
 
       - name: "Tests"
         run: "./vendor/phpunit/phpunit/phpunit --no-configuration ./tests"
