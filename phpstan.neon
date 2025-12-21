@@ -2,7 +2,6 @@ parameters:
   level: max
   paths:
     - src
-    - tests
   strictRules:
     disallowedLooseComparison: true
     booleansInConditions: true

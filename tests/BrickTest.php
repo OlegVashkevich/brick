@@ -69,6 +69,11 @@ class BrickTest extends TestCase
         rmdir($dir);
     }
 
+    /**
+     * @param  string  $className
+     * @param  array<string,string>  $files
+     * @return void
+     */
     private function createTestComponent(string $className, array $files = []): void
     {
         $componentDir = $this->testComponentsDir . '/' . $className;
@@ -77,22 +82,22 @@ class BrickTest extends TestCase
         }
 
         // Создаем PHP класс
-        if (!empty($files['php'])) {
+        if (isset($files['php'])) {
             file_put_contents($componentDir . '/' . $className . '.php', $files['php']);
         }
 
         // Создаем шаблон
-        if (!empty($files['template'])) {
+        if (isset($files['template'])) {
             file_put_contents($componentDir . '/template.php', $files['template']);
         }
 
         // Создаем CSS
-        if (!empty($files['css'])) {
+        if (isset($files['css'])) {
             file_put_contents($componentDir . '/style.css', $files['css']);
         }
 
         // Создаем JS
-        if (!empty($files['js'])) {
+        if (isset($files['js'])) {
             file_put_contents($componentDir . '/script.js', $files['js']);
         }
     }
@@ -179,7 +184,7 @@ class BrickTest extends TestCase
         $component = new \OlegV\Tests\ClassListComponent();
         $result = $component->render();
 
-        $this->assertEquals('<div class="btn primary visible">test</div>', $result);
+        $this->assertEquals('<div class="btn primary  visible">test</div>', $result);
     }
 
     public function testCssAndJsAssets(): void

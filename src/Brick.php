@@ -46,13 +46,23 @@ abstract class Brick
     protected string $dir;
 
     /**
-     * Статический реестр ассетов всех компонентов
+     * Статический реестр CSS ассетов всех компонентов
+     *
+     * @var array<string, string>
      */
     private static array $cssAssets = [];
+
+    /**
+     * Статический реестр JavaScript ассетов всех компонентов
+     *
+     * @var array<string, string>
+     */
     private static array $jsAssets = [];
 
     /**
      * Кэш всех данных компонента (статический, на уровне класса)
+     *
+     * @var array<string, array{dir: string, css: string, js: string}>
      */
     private static array $classCache = [];
 
@@ -70,8 +80,8 @@ abstract class Brick
         // ВСЁ за один проход - все операции только один раз на класс!
         if (!isset(self::$classCache[$className])) {
             $reflection = new ReflectionClass($className);
-            $dir = dirname($reflection->getFileName());
-            $templatePath = $dir . '/template.php';
+            $dir = dirname((string) $reflection->getFileName());
+            $templatePath = $dir.'/template.php';
 
             // Валидация шаблона
             if (!file_exists($templatePath)) {
@@ -81,27 +91,25 @@ abstract class Brick
             }
 
             // Загрузка ассетов
-            $css = file_exists($dir . '/style.css')
-                ? file_get_contents($dir . '/style.css')
-                : null;
-            $js = file_exists($dir . '/script.js')
-                ? file_get_contents($dir . '/script.js')
-                : null;
+            $css = file_exists($dir.'/style.css')
+                ? (string) file_get_contents($dir.'/style.css')
+                : '';
+            $js = file_exists($dir.'/script.js')
+                ? (string) file_get_contents($dir.'/script.js')
+                : '';
 
             // Сохраняем ВСЕ данные о классе
             self::$classCache[$className] = [
                 'dir' => $dir,
                 'css' => $css,
-                'js' => $js,
-                'template_mtime' => filemtime($templatePath),
-                'template_content' => null, // Ленивая загрузка при первом рендере
+                'js' => $js
             ];
 
             // Регистрируем ассеты в статических реестрах
-            if ($css !== null) {
+            if ($css !== '') {
                 self::$cssAssets[$className] = $css;
             }
-            if ($js !== null) {
+            if ($js !== '') {
                 self::$jsAssets[$className] = $js;
             }
         }
@@ -111,6 +119,7 @@ abstract class Brick
 
     /**
      * Рендерит компонент в HTML
+     * @return string
      */
     public function render(): string
     {
@@ -139,6 +148,7 @@ abstract class Brick
 
     /**
      * Преобразование в строку = рендеринг
+     * @return string
      */
     public function __toString(): string
     {
@@ -151,6 +161,8 @@ abstract class Brick
      * Экранирование HTML специальных символов
      *
      * @example <?= $this->e($title) ?>
+     * @param  string  $value
+     * @return string
      */
     protected function e(string $value): string
     {
@@ -160,21 +172,23 @@ abstract class Brick
     /**
      * Создание строки CSS классов из массива
      *
+     * @param  array<string>  $classes
      * @example class="<?= $this->classList(['btn', 'btn-primary']) ?>"
      */
     protected function classList(array $classes): string
     {
-        return implode(' ', array_filter($classes));
+        return implode(' ', array_filter($classes, fn($value) => $value !== ''));
     }
 
     // ==================== СТАТИЧЕСКИЕ МЕТОДЫ ДЛЯ УПРАВЛЕНИЯ АССЕТАМИ ====================
 
     /**
      * Рендерит все зарегистрированные CSS стили
+     * @return string
      */
     public static function renderCss(): string
     {
-        if (empty(self::$cssAssets)) {
+        if (self::$cssAssets === []) {
             return '';
         }
 
@@ -184,10 +198,11 @@ abstract class Brick
 
     /**
      * Рендерит весь зарегистрированный JavaScript
+     * @return string
      */
     public static function renderJs(): string
     {
-        if (empty(self::$jsAssets)) {
+        if (self::$jsAssets === []) {
             return '';
         }
 
@@ -197,6 +212,7 @@ abstract class Brick
 
     /**
      * Рендерит все ассеты (CSS + JavaScript)
+     * @return string
      */
     public static function renderAssets(): string
     {
@@ -215,6 +231,7 @@ abstract class Brick
 
     /**
      * Получить статистику кэша (для отладки)
+     * @return array{cached_classes: int, css_assets: int, js_assets: int}
      */
     public static function getCacheStats(): array
     {
