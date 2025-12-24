@@ -105,7 +105,7 @@ class BrickTest extends TestCase
     public function testComponentWithoutTemplateThrowsException(): void
     {
         $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('требует template.php');
+        $this->expectExceptionMessage('template.php не найден');
 
         eval('
             namespace OlegV\Tests;

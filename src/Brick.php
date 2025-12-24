@@ -50,21 +50,22 @@ abstract class Brick
      *
      * @var array<string, string>
      */
-    private static array $cssAssets = [];
+    protected static array $cssAssets = [];
 
     /**
      * Статический реестр JavaScript ассетов всех компонентов
      *
      * @var array<string, string>
      */
-    private static array $jsAssets = [];
+    protected static array $jsAssets = [];
 
     /**
      * Кэш всех данных компонента (статический, на уровне класса)
      *
-     * @var array<string, array{dir: string, css: string, js: string}>
+     * @var array<string, array{dir: string, templatePath: string, css: string, js: string}>
      */
-    private static array $classCache = [];
+    protected static array $classCache = [];
+    protected string $templatePath = '';
 
     /**
      * Конструктор компонента
@@ -77,44 +78,62 @@ abstract class Brick
     {
         $className = static::class;
 
-        // ВСЁ за один проход - все операции только один раз на класс!
-        if (!isset(self::$classCache[$className])) {
-            $reflection = new ReflectionClass($className);
-            $dir = dirname((string) $reflection->getFileName());
-            $templatePath = $dir.'/template.php';
-
-            // Валидация шаблона
-            if (!file_exists($templatePath)) {
-                throw new RuntimeException(
-                    "Компонент '{$reflection->getShortName()}' требует template.php в: $dir"
-                );
-            }
-
-            // Загрузка ассетов
-            $css = file_exists($dir.'/style.css')
-                ? (string) file_get_contents($dir.'/style.css')
-                : '';
-            $js = file_exists($dir.'/script.js')
-                ? (string) file_get_contents($dir.'/script.js')
-                : '';
-
-            // Сохраняем ВСЕ данные о классе
-            self::$classCache[$className] = [
-                'dir' => $dir,
-                'css' => $css,
-                'js' => $js
-            ];
-
-            // Регистрируем ассеты в статических реестрах
-            if ($css !== '') {
-                self::$cssAssets[$className] = $css;
-            }
-            if ($js !== '') {
-                self::$jsAssets[$className] = $js;
-            }
+        // Проверяем кэш
+        if (isset(self::$classCache[$className])) {
+            $this->useCachedData($className);
+            return;
         }
 
-        $this->dir = self::$classCache[$className]['dir'];
+        // Каждый класс сам решает, как он хочет инициализироваться
+        $this->initializeComponent();
+    }
+
+    /**
+     * Метод инициализации, который переопределяют компоненты
+     * По умолчанию - стандартная инициализация
+     */
+    protected function initializeComponent(): void
+    {
+        $className = static::class;
+
+        $reflection = new ReflectionClass($className);
+        $dir = dirname((string) $reflection->getFileName());
+        $templatePath = $dir.'/template.php';
+
+        if (!file_exists($templatePath)) {
+            throw new RuntimeException("template.php не найден");
+        }
+
+        $css = file_exists($dir.'/style.css')
+            ? (string) file_get_contents($dir.'/style.css')
+            : '';
+        $js = file_exists($dir.'/script.js')
+            ? (string) file_get_contents($dir.'/script.js')
+            : '';
+
+        self::$classCache[$className] = [
+            'dir' => $dir,
+            'templatePath' => $templatePath,
+            'css' => $css,
+            'js' => $js
+        ];
+
+        $this->dir = $dir;
+        $this->templatePath = $templatePath;
+
+        if ($css !== '') self::$cssAssets[$className] = $css;
+        if ($js !== '') self::$jsAssets[$className] = $js;
+    }
+
+    /**
+     * @param  string  $className
+     * @return void
+     */
+    private function useCachedData(string $className): void
+    {
+        $cached = self::$classCache[$className];
+        $this->dir = $cached['dir'];
+        $this->templatePath = $cached['dir'] . '/template.php';
     }
 
     /**
@@ -126,11 +145,7 @@ abstract class Brick
         ob_start();
 
         try {
-            // $this доступен в шаблоне как $component
-            //TODO: удалить для однозначности ?
-            //$component = $this;
-
-            include $this->dir . '/template.php';
+            include $this->templatePath;
         } catch (Throwable $e) {
             ob_end_clean();
             throw new RuntimeException(
@@ -165,7 +180,7 @@ abstract class Brick
      * @param  string  $value
      * @return string
      */
-    protected function e(string $value): string
+    public function e(string $value): string
     {
         return htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }

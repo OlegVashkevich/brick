@@ -1,0 +1,14 @@
+/* Override primary button styles */
+.btn-primary {
+    background-color: #28a745; /* Green instead of blue */
+    font-weight: bold;
+}
+
+.btn-primary:hover {
+    background-color: #1e7e34;
+}
+
+/* Additional styles for primary button */
+.btn-primary {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
