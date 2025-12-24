@@ -2,7 +2,6 @@
 namespace OlegV\Tests\Components;
 
 use OlegV\Brick;
-use OlegV\WithInheritance;
 
 class Button extends Brick
 {

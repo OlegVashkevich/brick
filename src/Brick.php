@@ -68,6 +68,10 @@ abstract class Brick
     protected string $templatePath = '';
 
     /**
+     * Рендерер ассетов
+     */
+    private static ?Assets\AssetRenderer $assetRenderer = null;
+    /**
      * Конструктор компонента
      *
      * Автоматически находит файлы компонента в той же директории
@@ -197,6 +201,24 @@ abstract class Brick
     }
 
     // ==================== СТАТИЧЕСКИЕ МЕТОДЫ ДЛЯ УПРАВЛЕНИЯ АССЕТАМИ ====================
+    /**
+     * Устанавливает рендерер ассетов
+     */
+    public static function setAssetRenderer(Assets\AssetRenderer $renderer): void
+    {
+        self::$assetRenderer = $renderer;
+    }
+
+    /**
+     * Получает рендерер ассетов (или создает дефолтный)
+     */
+    private static function getAssetRenderer(): Assets\AssetRenderer
+    {
+        if (self::$assetRenderer === null) {
+            self::$assetRenderer = new Assets\InlineAssetRenderer();
+        }
+        return self::$assetRenderer;
+    }
 
     /**
      * Рендерит все зарегистрированные CSS стили
@@ -208,8 +230,10 @@ abstract class Brick
             return '';
         }
 
-        $css = implode("\n\n", self::$cssAssets);
-        return "<style>\n$css\n</style>";
+        //$css = implode("\n\n", self::$cssAssets);
+        //return "<style>\n$css\n</style>";
+        //return AssetManager::renderCss(self::$cssAssets);
+        return self::getAssetRenderer()->renderCss(self::$cssAssets);
     }
 
     /**
@@ -222,8 +246,10 @@ abstract class Brick
             return '';
         }
 
-        $js = implode("\n\n", self::$jsAssets);
-        return "<script>\n$js\n</script>";
+        //$js = implode("\n\n", self::$jsAssets);
+        //return "<script>\n$js\n</script>";
+        //return AssetManager::renderJs(self::$jsAssets);
+        return self::getAssetRenderer()->renderJs(self::$jsAssets);
     }
 
     /**
@@ -232,7 +258,10 @@ abstract class Brick
      */
     public static function renderAssets(): string
     {
-        return self::renderCss() . "\n" . self::renderJs();
+        $css = self::renderCss();
+        $js = self::renderJs();
+
+        return $css . ($css!=='' && $js!=='' ? "\n" : '') . $js;
     }
 
     /**

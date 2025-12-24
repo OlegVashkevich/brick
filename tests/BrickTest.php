@@ -328,6 +328,6 @@ class BrickTest extends TestCase
 
         $this->assertEquals('', Brick::renderCss());
         $this->assertEquals('', Brick::renderJs());
-        $this->assertEquals("\n", Brick::renderAssets()); // CSS + \n + JS
+        $this->assertEquals("", Brick::renderAssets()); // CSS + \n + JS
     }
 }

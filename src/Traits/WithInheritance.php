@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace OlegV;
+namespace OlegV\Traits;
 
+use OlegV\Brick;
 use ReflectionClass;
 use RuntimeException;
 

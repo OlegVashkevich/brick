@@ -1,7 +1,7 @@
 <?php
 namespace OlegV\Tests\Components;
 
-use OlegV\WithInheritance;
+use OlegV\Traits\WithInheritance;
 
 class PrimaryButton extends Button
 {

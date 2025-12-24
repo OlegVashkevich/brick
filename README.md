@@ -221,13 +221,13 @@ $this->classList($classes); // Создание строки CSS классов
 - 💾 Интеллектуальное кэширование - результаты кэшируются для повторного использования
 ### Основные возможности
 #### 1. Подключение трейта
+
 ```php
 <?php
 
 namespace Components\IconButton;
 
-use OlegV\Brick;
-use OlegV\WithInheritance;
+use OlegV\Traits\WithInheritance;
 
 class IconButton extends PrimaryButton
 {

@@ -165,7 +165,7 @@ class BrickRealTest extends TestCase
 
         $this->assertEquals('', Brick::renderCss());
         $this->assertEquals('', Brick::renderJs());
-        $this->assertEquals("\n", Brick::renderAssets());
+        $this->assertEquals("", Brick::renderAssets());
     }
 
     public function testButtonComponentRendersCorrectly(): void
