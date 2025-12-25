@@ -1,15 +1,16 @@
 <?php
-namespace OlegV\Tests;
+namespace OlegV\Tests\Traits;
 
 use OlegV\Brick;
+use OlegV\Tests\Components;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
 // Подключаем реальные компоненты
-require_once __DIR__ . '/Components/Button/Button.php';
-require_once __DIR__ . '/Components/PrimaryButton/PrimaryButton.php';
-require_once __DIR__ . '/Components/Card/Card.php';
-require_once __DIR__ . '/Components/InvalidComponent/InvalidComponent.php';
+require_once __DIR__ . '/../Components/Button/Button.php';
+require_once __DIR__ . '/../Components/PrimaryButton/PrimaryButton.php';
+require_once __DIR__ . '/../Components/Card/Card.php';
+require_once __DIR__ . '/../Components/InvalidComponent/InvalidComponent.php';
 
 class WithInheritanceTest extends TestCase
 {

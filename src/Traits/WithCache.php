@@ -35,7 +35,7 @@ trait WithCache
     public function render(): string
     {
         // Если кэш не настроен - обычный рендер
-        if (!self::$cache) {
+        if (self::$cache===null) {
             return $this->renderOriginal();
         }
 
@@ -44,8 +44,8 @@ trait WithCache
 
         // Пробуем получить из кэша
         $cached = self::$cache->get($cacheKey);
-        if ($cached !== null) {
-            return (string)$cached;
+        if (is_string($cached)) {
+            return $cached;
         }
 
         // Рендерим и сохраняем в кэш
