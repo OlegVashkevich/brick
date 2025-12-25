@@ -4,33 +4,44 @@ declare(strict_types=1);
 
 namespace OlegV\Assets;
 
-class InlineAssetRenderer implements AssetRenderer
+/**
+ * @example
+ * $inlineRenderer = new InlineAssetRenderer();
+ * $inlineRenderer->setMinify(true);
+ * $inlineRenderer->setMode(InlineAssetRenderer::MODE_MULTIPLE);
+ *  TODO: тесты и phpstan
+ */
+class InlineAssetRenderer extends AbstractAssetRenderer
 {
-    /**
-     * @param  array<string, string>  $cssAssets
-     * @return string
-     */
     public function renderCss(array $cssAssets): string
     {
-        if ($cssAssets===[]) {
+        if ($cssAssets === []) {
             return '';
         }
 
-        $css = implode("\n\n", $cssAssets);
-        return "<style>\n$css\n</style>";
+        $processed = $this->processCssAssets($cssAssets);
+        $styles = [];
+
+        foreach ($processed as $css) {
+            $styles[] = "<style>\n$css\n</style>";
+        }
+
+        return implode("\n", $styles);
     }
 
-    /**
-     * @param  array<string, string>  $jsAssets
-     * @return string
-     */
     public function renderJs(array $jsAssets): string
     {
-        if ($jsAssets===[]) {
+        if ($jsAssets === []) {
             return '';
         }
 
-        $js = implode("\n\n", $jsAssets);
-        return "<script>\n$js\n</script>";
+        $processed = $this->processJsAssets($jsAssets);
+        $scripts = [];
+
+        foreach ($processed as $js) {
+            $scripts[] = "<script>\n$js\n</script>";
+        }
+
+        return implode("\n", $scripts);
     }
 }

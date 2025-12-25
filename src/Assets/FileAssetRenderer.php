@@ -4,20 +4,38 @@ declare(strict_types=1);
 
 namespace OlegV\Assets;
 
-class FileAssetRenderer implements AssetRenderer
+
+/**
+ * @example
+ * // 1. FileAssetRenderer
+ * $fileRenderer = new FileAssetRenderer(
+ * __DIR__ . '/public/assets',
+ * '/assets/',
+ * true,  // минификация
+ * FileAssetRenderer::MODE_SINGLE
+ * );
+ * $fileRenderer->setMinify(true);
+ * $fileRenderer->setMode(InlineAssetRenderer::MODE_MULTIPLE);
+ *  TODO: тесты и phpstan
+ */
+class FileAssetRenderer extends AbstractAssetRenderer
 {
     private string $outputDir;
     private string $publicUrl;
-    private bool $minify;
+    private string $filePrefix;
 
     public function __construct(
         string $outputDir,
         string $publicUrl = '/assets/',
-        bool $minify = false
+        bool $minify = false,
+        string $mode = self::MODE_SINGLE,
+        string $filePrefix = 'brick'
     ) {
         $this->outputDir = rtrim($outputDir, '/') . '/';
         $this->publicUrl = rtrim($publicUrl, '/') . '/';
+        $this->filePrefix = $filePrefix;
         $this->minify = $minify;
+        $this->mode = $mode;
 
         if (!is_dir($this->outputDir)) {
             mkdir($this->outputDir, 0755, true);
@@ -26,24 +44,24 @@ class FileAssetRenderer implements AssetRenderer
 
     public function renderCss(array $cssAssets): string
     {
-        if ($cssAssets===[]) {
+        if ($cssAssets === []) {
             return '';
         }
 
-        $css = implode("\n\n", $cssAssets);
+        $processed = $this->processCssAssets($cssAssets);
+        $links = [];
 
-        if ($this->minify) {
-            $css = $this->minifyCss($css);
+        foreach ($processed as $id => $css) {
+            $hash = md5($css);
+            $filename = $this->generateFilename($id, $hash, 'css');
+            $filepath = $this->outputDir . $filename;
+
+            $this->writeFileIfNotExists($filepath, $css);
+
+            $links[] = '<link rel="stylesheet" href="' . $this->publicUrl . $filename . '">';
         }
 
-        $filename = 'brick.' . md5($css) . '.css';
-        $filepath = $this->outputDir . $filename;
-
-        if (!file_exists($filepath)) {
-            file_put_contents($filepath, $css);
-        }
-
-        return '<link rel="stylesheet" href="' . $this->publicUrl . $filename . '">';
+        return implode("\n", $links);
     }
 
     public function renderJs(array $jsAssets): string
@@ -52,49 +70,44 @@ class FileAssetRenderer implements AssetRenderer
             return '';
         }
 
-        $js = implode("\n\n", $jsAssets);
+        $processed = $this->processJsAssets($jsAssets);
+        $scripts = [];
 
-        if ($this->minify) {
-            $js = $this->minifyJs($js);
+        foreach ($processed as $id => $js) {
+            $hash = md5($js);
+            $filename = $this->generateFilename($id, $hash, 'js');
+            $filepath = $this->outputDir . $filename;
+
+            $this->writeFileIfNotExists($filepath, $js);
+
+            $scripts[] = '<script src="' . $this->publicUrl . $filename . '"></script>';
         }
 
-        $filename = 'brick.' . md5($js) . '.js';
-        $filepath = $this->outputDir . $filename;
+        return implode("\n", $scripts);
+    }
 
+    /**
+     * Генерация имени файла
+     */
+    private function generateFilename(string $id, string $hash, string $extension): string
+    {
+        $mode = $this->mode === self::MODE_SINGLE ? 'all' : $id;
+        return sprintf(
+            '%s.%s.%s.%s',
+            $this->filePrefix,
+            $mode,
+            substr($hash, 0, 8),
+            $extension
+        );
+    }
+
+    /**
+     * Записать файл, если он не существует
+     */
+    private function writeFileIfNotExists(string $filepath, string $content): void
+    {
         if (!file_exists($filepath)) {
-            file_put_contents($filepath, $js);
+            file_put_contents($filepath, $content);
         }
-
-        return '<script src="' . $this->publicUrl . $filename . '"></script>';
-    }
-
-    private function minifyCss(string $css): string
-    {
-        // Удаляем комментарии
-        $css = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $css) ?? '';
-
-        // Удаляем пробелы, переносы строк, табы
-        $css = str_replace(["\r\n", "\r", "\n", "\t"], '', $css);
-        $css = preg_replace('/\s+/', ' ', $css) ?? '';
-
-        // Удаляем лишние пробелы вокруг символов
-        $css = preg_replace('/\s*([{}|:;,])\s*/', '$1', $css) ?? '';
-        $css = preg_replace('/;}/', '}', $css) ?? '';
-
-        return trim($css);
-    }
-
-    private function minifyJs(string $js): string
-    {
-        // Удаляем однострочные комментарии
-        $js = preg_replace('/(?:^|\s)\/\/.*$/m', '', $js) ?? '';
-
-        // Удаляем многострочные комментарии
-        $js = preg_replace('!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $js) ?? '';
-
-        // Удаляем лишние пробелы и переносы строк
-        $js = preg_replace('/\s+/', ' ', $js) ?? '';
-
-        return trim($js);
     }
 }
