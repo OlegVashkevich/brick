@@ -8,7 +8,7 @@ readonly class CachedButtonTtl extends Brick {
     public function __construct(public string $text = "Click me", public string $variant = "primary", public bool $disabled = false) {
         parent::__construct();
     }
-    protected function getTtl(): int
+    protected function ttl(): int
     {
         return 600; //время кэша изменено
     }

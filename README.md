@@ -404,7 +404,7 @@ readonly class ProductCard extends Brick
     use WithCache; // ← Подключаем трейт кэширования
     
     //если нужно указать особое время кэша
-    protected function getTtl(): int
+    protected function ttl(): int
     {
         return 600; //время кэша изменено
     }

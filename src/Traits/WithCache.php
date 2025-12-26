@@ -35,7 +35,7 @@ trait WithCache
 
         // Рендерим и сохраняем в кэш
         $html = $this->renderOriginal();
-        $cache->set($cacheKey, $html, $this->getTtl());
+        $cache->set($cacheKey, $html, $this->ttl());
 
         return $html;
     }
@@ -66,13 +66,13 @@ trait WithCache
      * Переопределите в своем компоненте
      * если для него требуется уникальное время кэширования
      * Пример:
-     * protected function getTtl(): int
+     * protected function ttl(): int
      * {
      *      return 600; // Кастомный TTL
      * }
      * @return int
      */
-    protected function getTtl(): int {
+    protected function ttl(): int {
         return BrickManager::$cacheTtl;
     }
 }

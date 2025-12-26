@@ -149,9 +149,9 @@ class WithCacheTest extends TestCase
         // Создаем компонент с явным TTL (600 из конструктора CachedButtonTtl)
         $button = new CachedButtonTtl('Test Button');
 
-        // Используем Reflection для вызова защищенного метода getTtl
+        // Используем Reflection для вызова защищенного метода ttl
         $reflection = new ReflectionClass($button);
-        $method = $reflection->getMethod('getTtl');
+        $method = $reflection->getMethod('ttl');
 
         $ttl = $method->invoke($button);
 
@@ -169,9 +169,9 @@ class WithCacheTest extends TestCase
         // CachedButton не устанавливает ttl в конструкторе
         $button = new CachedButton('Test Button');
 
-        // Используем Reflection для вызова защищенного метода getTtl
+        // Используем Reflection для вызова защищенного метода ttl
         $reflection = new ReflectionClass($button);
-        $method = $reflection->getMethod('getTtl');
+        $method = $reflection->getMethod('ttl');
 
         $ttl = $method->invoke($button);
 
@@ -245,11 +245,11 @@ class WithCacheTest extends TestCase
         $button2 = new CachedButtonTtl('Button 2'); // Использует явный TTL = 600
 
         $reflection1 = new ReflectionClass($button1);
-        $method1 = $reflection1->getMethod('getTtl');
+        $method1 = $reflection1->getMethod('ttl');
         $ttl1 = $method1->invoke($button1);
 
         $reflection2 = new ReflectionClass($button2);
-        $method2 = $reflection2->getMethod('getTtl');
+        $method2 = $reflection2->getMethod('ttl');
         $ttl2 = $method2->invoke($button2);
 
         $this->assertEquals(BrickManager::$cacheTtl, $ttl1);
@@ -269,13 +269,13 @@ class WithCacheTest extends TestCase
         $reflection1 = new ReflectionClass($button1);
         $reflection2 = new ReflectionClass($button2);
 
-        // Для CachedButton: проверяем через getTtl() что используется дефолтное значение
-        $method1 = $reflection1->getMethod('getTtl');
+        // Для CachedButton: проверяем через ttl() что используется дефолтное значение
+        $method1 = $reflection1->getMethod('ttl');
         $ttl1 = $method1->invoke($button1);
         $this->assertEquals(BrickManager::$cacheTtl, $ttl1);
 
         // Для CachedButtonTtl: свойство инициализировано как 600
-        $method2 = $reflection2->getMethod('getTtl');
+        $method2 = $reflection2->getMethod('ttl');
         $ttl2 = $method2->invoke($button2);
         $this->assertEquals(600, $ttl2);
     }
