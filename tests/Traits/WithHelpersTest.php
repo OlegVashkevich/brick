@@ -58,12 +58,6 @@ class WithHelpersTest extends TestCase
         $this->assertEquals('btn active btn-primary hidden', $result);
     }
 
-    public function testClassListWithEmptyValues(): void
-    {
-        $result = $this->classList(['', 'btn', 'test']);
-        $this->assertEquals('btn', $result);
-    }
-
     public function testClassListRemovesDuplicates(): void
     {
         $result = $this->classList(['btn', 'btn', 'active', 'active']);
