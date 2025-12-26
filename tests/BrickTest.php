@@ -2,13 +2,14 @@
 namespace OlegV\Tests;
 
 use OlegV\Brick;
+use OlegV\BrickManager;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
 /**
  * Тестовый компонент для проверки Brick
  */
-class TestButton extends Brick
+readonly class TestButton extends Brick
 {
     public function __construct(
         public string $text,
@@ -21,7 +22,7 @@ class TestButton extends Brick
 /**
  * Тестовый компонент без CSS/JS
  */
-class TestSimpleComponent extends Brick
+readonly class TestSimpleComponent extends Brick
 {
     public function __construct(
         public string $content = 'test'
@@ -37,7 +38,7 @@ class BrickTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        Brick::clear();
+        BrickManager::getInstance()->clear();
 
         // Создаем директорию для тестовых компонентов
         $this->testComponentsDir = __DIR__ . '/test_components';
@@ -52,6 +53,7 @@ class BrickTest extends TestCase
         if (is_dir($this->testComponentsDir)) {
             $this->removeDirectory($this->testComponentsDir);
         }
+        BrickManager::getInstance()->clear();
         parent::tearDown();
     }
 
@@ -109,7 +111,7 @@ class BrickTest extends TestCase
 
         eval('
             namespace OlegV\Tests;
-            class InvalidComponent extends \OlegV\Brick {
+            readonly class InvalidComponent extends \OlegV\Brick {
                 // Не будет файла template.php
             }
         ');
@@ -121,7 +123,7 @@ class BrickTest extends TestCase
     public function testComponentWithValidTemplate(): void
     {
         $this->createTestComponent('ValidComponent', [
-            'php' => '<?php namespace OlegV\Tests; class ValidComponent extends \OlegV\Brick { public function __construct(public string $title = "test") { parent::__construct(); } }',
+            'php' => '<?php namespace OlegV\Tests; readonly class ValidComponent extends \OlegV\Brick { public function __construct(public string $title = "test") { parent::__construct(); } }',
             'template' => '<div class="test"><?= $this->e($this->title) ?></div>'
         ]);
 
@@ -137,7 +139,7 @@ class BrickTest extends TestCase
     public function testToStringMethod(): void
     {
         $this->createTestComponent('ToStringComponent', [
-            'php' => '<?php namespace OlegV\Tests; class ToStringComponent extends \OlegV\Brick { public function __construct(public string $value = "test") { parent::__construct(); } }',
+            'php' => '<?php namespace OlegV\Tests; readonly class ToStringComponent extends \OlegV\Brick { public function __construct(public string $value = "test") { parent::__construct(); } }',
             'template' => '<span><?= $this->value ?></span>'
         ]);
 
@@ -151,7 +153,7 @@ class BrickTest extends TestCase
     public function testEscapeMethod(): void
     {
         $this->createTestComponent('EscapeComponent', [
-            'php' => '<?php namespace OlegV\Tests; class EscapeComponent extends \OlegV\Brick { 
+            'php' => '<?php namespace OlegV\Tests; readonly class EscapeComponent extends \OlegV\Brick { 
                 public function __construct(public string $content = "") { parent::__construct(); } 
                 public function testEscape() { return $this->e($this->content); }
             }',
@@ -170,7 +172,8 @@ class BrickTest extends TestCase
     public function testClassListMethod(): void
     {
         $this->createTestComponent('ClassListComponent', [
-            'php' => '<?php namespace OlegV\Tests; class ClassListComponent extends \OlegV\Brick { 
+            'php' => '<?php namespace OlegV\Tests; use OlegV\Traits\WithHelpers;readonly class ClassListComponent extends \OlegV\Brick { 
+                use WithHelpers;
                 public function __construct() { parent::__construct(); } 
                 public function testClassList() { 
                     return $this->classList(["btn", "primary", "", null, false ? "hidden" : "visible"]); 
@@ -184,13 +187,13 @@ class BrickTest extends TestCase
         $component = new \OlegV\Tests\ClassListComponent();
         $result = $component->render();
 
-        $this->assertEquals('<div class="btn primary  visible">test</div>', $result);
+        $this->assertEquals('<div class="btn primary visible">test</div>', $result);
     }
 
     public function testCssAndJsAssets(): void
     {
         $this->createTestComponent('AssetComponent', [
-            'php' => '<?php namespace OlegV\Tests; class AssetComponent extends \OlegV\Brick { 
+            'php' => '<?php namespace OlegV\Tests; readonly class AssetComponent extends \OlegV\Brick { 
                 public function __construct() { parent::__construct(); } 
             }',
             'template' => '<div>test</div>',
@@ -203,9 +206,9 @@ class BrickTest extends TestCase
         // Создаем компонент для регистрации ассетов
         new \OlegV\Tests\AssetComponent();
 
-        $css = Brick::renderCss();
-        $js = Brick::renderJs();
-        $assets = Brick::renderAssets();
+        $css = BrickManager::getInstance()->renderCss();
+        $js = BrickManager::getInstance()->renderJs();
+        $assets = BrickManager::getInstance()->renderAssets();
 
         $this->assertStringContainsString('.asset-component { color: red; }', $css);
         $this->assertStringContainsString('console.log("AssetComponent loaded")', $js);
@@ -218,7 +221,7 @@ class BrickTest extends TestCase
     {
         // Создаем первый компонент
         $this->createTestComponent('ComponentA', [
-            'php' => '<?php namespace OlegV\Tests; class ComponentA extends \OlegV\Brick { 
+            'php' => '<?php namespace OlegV\Tests; readonly class ComponentA extends \OlegV\Brick { 
                 public function __construct() { parent::__construct(); } 
             }',
             'template' => '<div>A</div>',
@@ -227,7 +230,7 @@ class BrickTest extends TestCase
 
         // Создаем второй компонент
         $this->createTestComponent('ComponentB', [
-            'php' => '<?php namespace OlegV\Tests; class ComponentB extends \OlegV\Brick { 
+            'php' => '<?php namespace OlegV\Tests; readonly class ComponentB extends \OlegV\Brick { 
                 public function __construct() { parent::__construct(); } 
             }',
             'template' => '<div>B</div>',
@@ -241,13 +244,13 @@ class BrickTest extends TestCase
         new \OlegV\Tests\ComponentA();
         new \OlegV\Tests\ComponentB();
 
-        $css = Brick::renderCss();
-        $js = Brick::renderJs();
+        $css = BrickManager::getInstance()->renderCss();
+        $js = BrickManager::getInstance()->renderJs();
 
         $this->assertStringContainsString('.component-a', $css);
         $this->assertStringContainsString('ComponentB', $js);
 
-        $stats = Brick::getCacheStats();
+        $stats = BrickManager::getInstance()->getStats();
         $this->assertEquals(2, $stats['cached_classes']);
         $this->assertEquals(1, $stats['css_assets']);
         $this->assertEquals(1, $stats['js_assets']);
@@ -256,7 +259,7 @@ class BrickTest extends TestCase
     public function testClearMethod(): void
     {
         $this->createTestComponent('ClearTestComponent', [
-            'php' => '<?php namespace OlegV\Tests; class ClearTestComponent extends \OlegV\Brick { 
+            'php' => '<?php namespace OlegV\Tests; readonly class ClearTestComponent extends \OlegV\Brick { 
                 public function __construct() { parent::__construct(); } 
             }',
             'template' => '<div>test</div>',
@@ -267,12 +270,12 @@ class BrickTest extends TestCase
 
         new \OlegV\Tests\ClearTestComponent();
 
-        $statsBefore = Brick::getCacheStats();
+        $statsBefore = BrickManager::getInstance()->getStats();
         $this->assertGreaterThan(0, $statsBefore['cached_classes']);
 
-        Brick::clear();
+        BrickManager::getInstance()->clear();
 
-        $statsAfter = Brick::getCacheStats();
+        $statsAfter = BrickManager::getInstance()->getStats();
         $this->assertEquals(0, $statsAfter['cached_classes']);
         $this->assertEquals(0, $statsAfter['css_assets']);
         $this->assertEquals(0, $statsAfter['js_assets']);
@@ -281,7 +284,7 @@ class BrickTest extends TestCase
     public function testTemplateWithException(): void
     {
         $this->createTestComponent('ErrorComponent', [
-            'php' => '<?php namespace OlegV\Tests; class ErrorComponent extends \OlegV\Brick { 
+            'php' => '<?php namespace OlegV\Tests; readonly class ErrorComponent extends \OlegV\Brick { 
                 public function __construct() { parent::__construct(); } 
             }',
             'template' => '<?php throw new \Exception("Template error"); ?>'
@@ -299,7 +302,7 @@ class BrickTest extends TestCase
     public function testCacheReuse(): void
     {
         $this->createTestComponent('CachedComponent', [
-            'php' => '<?php namespace OlegV\Tests; class CachedComponent extends \OlegV\Brick { 
+            'php' => '<?php namespace OlegV\Tests; readonly class CachedComponent extends \OlegV\Brick { 
                 public function __construct(public int $id = 0) { parent::__construct(); } 
             }',
             'template' => '<div id="<?= $this->id ?>">cached</div>'
@@ -318,16 +321,16 @@ class BrickTest extends TestCase
         $this->assertEquals('<div id="1">cached</div>', $result1);
         $this->assertEquals('<div id="2">cached</div>', $result2);
 
-        $stats = Brick::getCacheStats();
+        $stats = BrickManager::getInstance()->getStats();
         $this->assertEquals(1, $stats['cached_classes']);
     }
 
     public function testEmptyAssetsRenderEmptyString(): void
     {
-        Brick::clear();
+        BrickManager::getInstance()->clear();
 
-        $this->assertEquals('', Brick::renderCss());
-        $this->assertEquals('', Brick::renderJs());
-        $this->assertEquals("", Brick::renderAssets()); // CSS + \n + JS
+        $this->assertEquals('', BrickManager::getInstance()->renderCss());
+        $this->assertEquals('', BrickManager::getInstance()->renderJs());
+        $this->assertEquals("", BrickManager::getInstance()->renderAssets()); // CSS + \n + JS
     }
 }

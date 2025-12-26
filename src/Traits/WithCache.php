@@ -6,26 +6,14 @@ declare(strict_types=1);
 namespace OlegV\Traits;
 
 use JsonException;
-use Psr\SimpleCache\CacheInterface;
+use OlegV\BrickManager;
 use Psr\SimpleCache\InvalidArgumentException;
 use RuntimeException;
 use Throwable;
 
 trait WithCache
 {
-    private static ?CacheInterface $cache = null;
-    protected static string $cachePrefix = 'brick_';
-    protected static int $cacheTtl = 3600;
 
-    protected string $templatePath = '';
-
-    /**
-     * Устанавливает PSR-16 кэш для всех компонентов
-     */
-    public static function setCache(CacheInterface $cache): void
-    {
-        self::$cache = $cache;
-    }
 
     /**
      * Рендерит компонент с кэшированием
@@ -34,23 +22,24 @@ trait WithCache
      */
     public function render(): string
     {
+        $cache = BrickManager::getCache();
         // Если кэш не настроен - обычный рендер
-        if (self::$cache===null) {
+        if ($cache===null) {
             return $this->renderOriginal();
         }
 
         // Генерируем ключ кэша
-        $cacheKey = self::$cachePrefix.static::class.'_'.$this->getCacheHash();
+        $cacheKey = BrickManager::$cachePrefix.static::class.'_'.$this->getCacheHash();
 
         // Пробуем получить из кэша
-        $cached = self::$cache->get($cacheKey);
+        $cached = $cache->get($cacheKey);
         if (is_string($cached)) {
             return $cached;
         }
 
         // Рендерим и сохраняем в кэш
         $html = $this->renderOriginal();
-        self::$cache->set($cacheKey, $html, self::$cacheTtl);
+        $cache->set($cacheKey, $html, BrickManager::$cacheTtl);
 
         return $html;
     }
@@ -64,7 +53,10 @@ trait WithCache
             ob_start();
 
             try {
-                include $this->templatePath;
+                $className = static::class;
+                $manager = BrickManager::getInstance();
+                $cached = $manager->getCachedComponent($className);
+                include $cached['templatePath'];
             } catch (Throwable $e) {
                 ob_end_clean();
                 throw new RuntimeException(

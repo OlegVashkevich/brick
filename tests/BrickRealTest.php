@@ -2,6 +2,7 @@
 namespace OlegV\Tests;
 
 use OlegV\Brick;
+use OlegV\BrickManager;
 use OlegV\Tests\Components\Button;
 use OlegV\Tests\Components\PrimaryButton;
 use OlegV\Tests\Components\Card;
@@ -19,12 +20,12 @@ class BrickRealTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        Brick::clear();
+        BrickManager::getInstance()->clear();
     }
 
     protected function tearDown(): void
     {
-        Brick::clear();
+        BrickManager::getInstance()->clear();
         parent::tearDown();
     }
 
@@ -84,9 +85,9 @@ class BrickRealTest extends TestCase
         // Создаем компонент для регистрации ассетов
         $button = new Button();
 
-        $css = Brick::renderCss();
-        $js = Brick::renderJs();
-        $assets = Brick::renderAssets();
+        $css = BrickManager::getInstance()->renderCss();
+        $js = BrickManager::getInstance()->renderJs();
+        $assets = BrickManager::getInstance()->renderAssets();
 
         $this->assertStringContainsString('.btn {', $css);
         $this->assertStringContainsString('.btn-primary {', $css);
@@ -105,15 +106,15 @@ class BrickRealTest extends TestCase
         $primaryButton = new PrimaryButton();
         $card = new Card();
 
-        $css = Brick::renderCss();
-        $js = Brick::renderJs();
+        $css = BrickManager::getInstance()->renderCss();
+        $js = BrickManager::getInstance()->renderJs();
 
         $this->assertStringContainsString('.btn {', $css);
         $this->assertStringContainsString('.card {', $css);
         $this->assertStringContainsString('.btn-primary {', $css);
         $this->assertStringContainsString('Button clicked:', $js);
 
-        $stats = Brick::getCacheStats();
+        $stats = BrickManager::getInstance()->getStats();
         $this->assertEquals(3, $stats['cached_classes']);
         $this->assertGreaterThan(0, $stats['css_assets']);
         $this->assertGreaterThan(0, $stats['js_assets']);
@@ -123,12 +124,12 @@ class BrickRealTest extends TestCase
     {
         $button = new Button();
 
-        $statsBefore = Brick::getCacheStats();
+        $statsBefore = BrickManager::getInstance()->getStats();
         $this->assertGreaterThan(0, $statsBefore['cached_classes']);
 
-        Brick::clear();
+        BrickManager::getInstance()->clear();
 
-        $statsAfter = Brick::getCacheStats();
+        $statsAfter = BrickManager::getInstance()->getStats();
         $this->assertEquals(0, $statsAfter['cached_classes']);
         $this->assertEquals(0, $statsAfter['css_assets']);
         $this->assertEquals(0, $statsAfter['js_assets']);
@@ -155,17 +156,17 @@ class BrickRealTest extends TestCase
         $this->assertStringContainsString('>Button 1<', $result1);
         $this->assertStringContainsString('>Button 2<', $result2);
 
-        $stats = Brick::getCacheStats();
+        $stats = BrickManager::getInstance()->getStats();
         $this->assertEquals(1, $stats['cached_classes']); // Один класс Button кэширован
     }
 
     public function testEmptyAssetsRenderEmptyString(): void
     {
-        Brick::clear();
+        BrickManager::getInstance()->clear();
 
-        $this->assertEquals('', Brick::renderCss());
-        $this->assertEquals('', Brick::renderJs());
-        $this->assertEquals("", Brick::renderAssets());
+        $this->assertEquals('', BrickManager::getInstance()->renderCss());
+        $this->assertEquals('', BrickManager::getInstance()->renderJs());
+        $this->assertEquals("", BrickManager::getInstance()->renderAssets());
     }
 
     public function testButtonComponentRendersCorrectly(): void
@@ -201,7 +202,7 @@ class BrickRealTest extends TestCase
         $button = new Button();
         $primaryButton = new PrimaryButton();
 
-        $css = Brick::renderCss();
+        $css = BrickManager::getInstance()->renderCss();
 
         $this->assertStringContainsString('.btn {', $css);
         $this->assertStringContainsString('.btn-primary {', $css);
@@ -214,7 +215,7 @@ class BrickRealTest extends TestCase
     public function testJsInheritance(): void
     {
         $button = new Button();
-        $js = Brick::renderJs();
+        $js = BrickManager::getInstance()->renderJs();
 
         $this->assertStringContainsString('Button clicked:', $js);
         $this->assertStringContainsString('DOMContentLoaded', $js);
@@ -250,7 +251,7 @@ class BrickRealTest extends TestCase
     public function testCardCssAssets(): void
     {
         $card = new Card();
-        $css = Brick::renderCss();
+        $css = BrickManager::getInstance()->renderCss();
 
         $this->assertStringContainsString('.card {', $css);
         $this->assertStringContainsString('border-radius: 8px', $css);
@@ -263,7 +264,7 @@ class BrickRealTest extends TestCase
         new PrimaryButton();
         new Card();
 
-        $assets = Brick::renderAssets();
+        $assets = BrickManager::getInstance()->renderAssets();
 
         $this->assertStringContainsString('<style>', $assets);
         $this->assertStringContainsString('<script>', $assets);

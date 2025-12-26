@@ -38,39 +38,8 @@ use Throwable;
  *     }
  * }
  */
-abstract class Brick
+abstract readonly class Brick
 {
-    /**
-     * Директория компонента (где лежат template.php, style.css, script.js)
-     */
-    protected string $dir;
-
-    /**
-     * Статический реестр CSS ассетов всех компонентов
-     *
-     * @var array<string, string>
-     */
-    protected static array $cssAssets = [];
-
-    /**
-     * Статический реестр JavaScript ассетов всех компонентов
-     *
-     * @var array<string, string>
-     */
-    protected static array $jsAssets = [];
-
-    /**
-     * Кэш всех данных компонента (статический, на уровне класса)
-     *
-     * @var array<string, array{dir: string, templatePath: string, css: string, js: string}>
-     */
-    protected static array $classCache = [];
-    protected string $templatePath = '';
-
-    /**
-     * Рендерер ассетов
-     */
-    private static ?Assets\AssetRenderer $assetRenderer = null;
     /**
      * Конструктор компонента
      *
@@ -82,21 +51,24 @@ abstract class Brick
     {
         $className = static::class;
 
+        $manager = BrickManager::getInstance();
+
         // Проверяем кэш
-        if (isset(self::$classCache[$className])) {
-            $this->useCachedData($className);
+        if ($manager->isComponentCached($className)) {
+            $this->useCachedData($className, $manager);
             return;
         }
 
         // Каждый класс сам решает, как он хочет инициализироваться
-        $this->initializeComponent();
+        $this->initializeComponent($manager);
     }
 
     /**
      * Метод инициализации, который переопределяют компоненты
      * По умолчанию - стандартная инициализация
+     * @param  BrickManager  $manager
      */
-    protected function initializeComponent(): void
+    protected function initializeComponent(BrickManager $manager): void
     {
         $className = static::class;
 
@@ -115,29 +87,30 @@ abstract class Brick
             ? (string) file_get_contents($dir.'/script.js')
             : '';
 
-        self::$classCache[$className] = [
-            'dir' => $dir,
-            'templatePath' => $templatePath,
-            'css' => $css,
-            'js' => $js
-        ];
-
-        $this->dir = $dir;
-        $this->templatePath = $templatePath;
-
-        if ($css !== '') self::$cssAssets[$className] = $css;
-        if ($js !== '') self::$jsAssets[$className] = $js;
+        // Кэшируем в менеджере
+        $manager->cacheComponent(
+            className: $className,
+            dir: $dir,
+            templatePath: $templatePath,
+            css: $css,
+            js: $js
+        );
     }
 
     /**
      * @param  string  $className
+     * @param  BrickManager  $manager
      * @return void
      */
-    private function useCachedData(string $className): void
+    private function useCachedData(string $className, BrickManager $manager): void
     {
-        $cached = self::$classCache[$className];
-        $this->dir = $cached['dir'];
-        $this->templatePath = $cached['dir'] . '/template.php';
+        $cached = $manager->getCachedComponent($className);
+
+        if ($cached === null) {
+            throw new RuntimeException(
+                sprintf('Кэшированные данные не найдены для %s', $className)
+            );
+        }
     }
 
     /**
@@ -147,9 +120,11 @@ abstract class Brick
     public function render(): string
     {
         ob_start();
-
         try {
-            include $this->templatePath;
+            $className = static::class;
+            $manager = BrickManager::getInstance();
+            $cached = $manager->getCachedComponent($className);
+            include $cached['templatePath'];
         } catch (Throwable $e) {
             ob_end_clean();
             throw new RuntimeException(
@@ -187,103 +162,5 @@ abstract class Brick
     public function e(string $value): string
     {
         return htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
-    }
-
-    /**
-     * Создание строки CSS классов из массива
-     *
-     * @param  array<string>  $classes
-     * @example class="<?= $this->classList(['btn', 'btn-primary']) ?>"
-     */
-    protected function classList(array $classes): string
-    {
-        return implode(' ', array_filter($classes, fn($value) => $value !== ''));
-    }
-
-    // ==================== СТАТИЧЕСКИЕ МЕТОДЫ ДЛЯ УПРАВЛЕНИЯ АССЕТАМИ ====================
-    /**
-     * Устанавливает рендерер ассетов
-     */
-    public static function setAssetRenderer(Assets\AssetRenderer $renderer): void
-    {
-        self::$assetRenderer = $renderer;
-    }
-
-    /**
-     * Получает рендерер ассетов (или создает дефолтный)
-     */
-    private static function getAssetRenderer(): Assets\AssetRenderer
-    {
-        if (self::$assetRenderer === null) {
-            self::$assetRenderer = new Assets\InlineAssetRenderer();
-        }
-        return self::$assetRenderer;
-    }
-
-    /**
-     * Рендерит все зарегистрированные CSS стили
-     * @return string
-     */
-    public static function renderCss(): string
-    {
-        if (self::$cssAssets === []) {
-            return '';
-        }
-
-        //$css = implode("\n\n", self::$cssAssets);
-        //return "<style>\n$css\n</style>";
-        //return AssetManager::renderCss(self::$cssAssets);
-        return self::getAssetRenderer()->renderCss(self::$cssAssets);
-    }
-
-    /**
-     * Рендерит весь зарегистрированный JavaScript
-     * @return string
-     */
-    public static function renderJs(): string
-    {
-        if (self::$jsAssets === []) {
-            return '';
-        }
-
-        //$js = implode("\n\n", self::$jsAssets);
-        //return "<script>\n$js\n</script>";
-        //return AssetManager::renderJs(self::$jsAssets);
-        return self::getAssetRenderer()->renderJs(self::$jsAssets);
-    }
-
-    /**
-     * Рендерит все ассеты (CSS + JavaScript)
-     * @return string
-     */
-    public static function renderAssets(): string
-    {
-        $css = self::renderCss();
-        $js = self::renderJs();
-
-        return $css . ($css!=='' && $js!=='' ? "\n" : '') . $js;
-    }
-
-    /**
-     * Очищает реестр ассетов (полезно для тестирования)
-     */
-    public static function clear(): void
-    {
-        self::$cssAssets = [];
-        self::$jsAssets = [];
-        self::$classCache = [];
-    }
-
-    /**
-     * Получить статистику кэша (для отладки)
-     * @return array{cached_classes: int, css_assets: int, js_assets: int}
-     */
-    public static function getCacheStats(): array
-    {
-        return [
-            'cached_classes' => count(self::$classCache),
-            'css_assets' => count(self::$cssAssets),
-            'js_assets' => count(self::$jsAssets),
-        ];
     }
 }

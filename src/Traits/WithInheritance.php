@@ -5,31 +5,27 @@ declare(strict_types=1);
 namespace OlegV\Traits;
 
 use OlegV\Brick;
+use OlegV\BrickManager;
 use ReflectionClass;
 use RuntimeException;
 
 trait WithInheritance
 {
-    protected function initializeComponent(): void
+    protected function initializeComponent(BrickManager $manager): void
     {
         $className = static::class;
 
         // ОДИН проход по иерархии
         $data = $this->findTemplateAndAssets();
 
-        // Сохраняем в кэш
-        Brick::$classCache[$className] = [
-            'dir' => $data['dir'],
-            'templatePath' => $data['templatePath'],
-            'css' => $data['css'],
-            'js' => $data['js']
-        ];
-
-        $this->dir = $data['dir'];
-        $this->templatePath = $data['templatePath'];
-
-        if ($data['css'] !== '') Brick::$cssAssets[$className] = $data['css'];
-        if ($data['js'] !== '') Brick::$jsAssets[$className] = $data['js'];
+        // Кэшируем в менеджере
+        $manager->cacheComponent(
+            className: $className,
+            dir: $data['dir'],
+            templatePath: $data['templatePath'],
+            css: $data['css'],
+            js: $data['js']
+        );
     }
 
     /**

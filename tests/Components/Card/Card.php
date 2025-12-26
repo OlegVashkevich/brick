@@ -3,7 +3,7 @@ namespace OlegV\Tests\Components;
 
 use OlegV\Brick;
 
-class Card extends Brick
+readonly class Card extends Brick
 {
     public function __construct(
         public string $title = '',

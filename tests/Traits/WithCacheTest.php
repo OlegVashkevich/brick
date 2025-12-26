@@ -3,7 +3,7 @@
 namespace OlegV\Tests\Traits;
 
 use JsonException;
-use OlegV\Brick;
+use OlegV\BrickManager;
 use OlegV\Tests\Components\CachedButton;
 use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
@@ -29,7 +29,7 @@ class WithCacheTest extends TestCase
         $this->cacheMock = $this->createMock(CacheInterface::class);
 
         // Очищаем Brick
-        Brick::clear();
+        BrickManager::getInstance()->clear();
     }
 
     /**
@@ -39,7 +39,7 @@ class WithCacheTest extends TestCase
     public function testCachedButtonRendersWithCache(): void
     {
         // Устанавливаем кэш
-        CachedButton::setCache($this->cacheMock);
+        BrickManager::getInstance()->setCache($this->cacheMock);
 
         // Настраиваем мок
         $this->cacheMock->method('get')
@@ -52,7 +52,7 @@ class WithCacheTest extends TestCase
         $this->assertEquals('<button class="btn btn-primary">Cached</button>', $result);
 
         // Проверяем что CSS все равно регистрируется
-        $css = Brick::renderCss();
+        $css = BrickManager::getInstance()->renderCss();
         $this->assertStringContainsString('.btn { display: inline-block; }', $css);
     }
 
@@ -82,7 +82,7 @@ class WithCacheTest extends TestCase
     public function testCacheMissCallsRenderOriginal(): void
     {
         // Устанавливаем кэш
-        CachedButton::setCache($this->cacheMock);
+        BrickManager::getInstance()->setCache($this->cacheMock);
 
         // Настраиваем мок для кэш-промаха
         $this->cacheMock->expects($this->once())

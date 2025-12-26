@@ -1,7 +1,7 @@
 <?php
 namespace OlegV\Tests\Traits;
 
-use OlegV\Brick;
+use OlegV\BrickManager;
 use OlegV\Tests\Components;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -17,12 +17,12 @@ class WithInheritanceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        Brick::clear();
+        BrickManager::getInstance()->clear();
     }
 
     protected function tearDown(): void
     {
-        Brick::clear();
+        BrickManager::getInstance()->clear();
         parent::tearDown();
     }
 
@@ -77,7 +77,7 @@ class WithInheritanceTest extends TestCase
         $button = new Components\Button();
         $primaryButton = new Components\PrimaryButton();
 
-        $css = Brick::renderCss();
+        $css = BrickManager::getInstance()->renderCss();
 
         // Проверяем что есть CSS от Button
         $this->assertStringContainsString('.btn {', $css);
@@ -100,7 +100,7 @@ class WithInheritanceTest extends TestCase
     public function testJsInheritance(): void
     {
         $button = new Components\Button();
-        $js = Brick::renderJs();
+        $js = BrickManager::getInstance()->renderJs();
 
         $this->assertStringContainsString('Button clicked:', $js);
         $this->assertStringContainsString('DOMContentLoaded', $js);
@@ -136,7 +136,7 @@ class WithInheritanceTest extends TestCase
     public function testCardCssAssets(): void
     {
         $card = new Components\Card();
-        $css = Brick::renderCss();
+        $css = BrickManager::getInstance()->renderCss();
 
         $this->assertStringContainsString('.card {', $css);
         $this->assertStringContainsString('border-radius: 8px', $css);
@@ -150,7 +150,7 @@ class WithInheritanceTest extends TestCase
         new Components\PrimaryButton();
         new Components\Card();
 
-        $assets = Brick::renderAssets();
+        $assets = BrickManager::getInstance()->renderAssets();
 
         $this->assertStringContainsString('<style>', $assets);
         $this->assertStringContainsString('<script>', $assets);

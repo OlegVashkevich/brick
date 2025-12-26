@@ -3,7 +3,7 @@ namespace OlegV\Tests\Components;
 
 use OlegV\Brick;
 
-class Button extends Brick
+readonly class Button extends Brick
 {
     public function __construct(
         public string $text = 'Click me',

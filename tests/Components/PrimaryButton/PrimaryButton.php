@@ -3,7 +3,7 @@ namespace OlegV\Tests\Components;
 
 use OlegV\Traits\WithInheritance;
 
-class PrimaryButton extends Button
+readonly class PrimaryButton extends Button
 {
     use WithInheritance;
     public function __construct(
