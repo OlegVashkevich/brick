@@ -38,11 +38,10 @@ final class BrickManager
     private static ?CacheInterface $cache = null;
     public static string $cachePrefix = 'brick_';
     public static int $cacheTtl = 3600;
-    private ?AssetRenderer $assetRenderer;
 
-    public function __construct(AssetRenderer $assetRenderer=null)
-    {
-        $this->assetRenderer = $assetRenderer ?? new Assets\InlineAssetRenderer();
+    public function __construct(
+        private readonly AssetRenderer $assetRenderer = new Assets\InlineAssetRenderer()
+    ) {
     }
 
     public static function getInstance(): self
@@ -94,6 +93,10 @@ final class BrickManager
         }
     }
 
+    /**
+     * @param  string  $className
+     * @return array{dir: string, templatePath: string, css: string, js: string}|null
+     */
     public function getCachedComponent(string $className): ?array
     {
         return $this->classCache[$className] ?? null;
@@ -108,7 +111,7 @@ final class BrickManager
 
     public function renderCss(): string
     {
-        if (empty($this->cssAssets)) {
+        if ($this->cssAssets === []) {
             return '';
         }
 
@@ -117,7 +120,7 @@ final class BrickManager
 
     public function renderJs(): string
     {
-        if (empty($this->jsAssets)) {
+        if ($this->jsAssets === []) {
             return '';
         }
 
@@ -149,6 +152,9 @@ final class BrickManager
         $this->classCache = [];
     }
 
+    /**
+     * @return array{cached_classes: int, css_assets: int, js_assets: int}
+     */
     public function getStats(): array
     {
         return [

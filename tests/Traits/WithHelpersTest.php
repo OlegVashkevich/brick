@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OlegV\Tests\Traits;
 
 use DateTime;
+use JsonException;
 use OlegV\Traits\WithHelpers;
 use PHPUnit\Framework\TestCase;
 
@@ -130,6 +131,9 @@ class WithHelpersTest extends TestCase
         $this->assertEquals('', $this->date('invalid-date'));
     }
 
+    /**
+     * @throws JsonException
+     */
     public function testJsonEncoding(): void
     {
         $data = [
@@ -140,7 +144,9 @@ class WithHelpersTest extends TestCase
         ];
 
         $result = $this->json($data);
-        $decoded = json_decode($result, true);
+        $decoded = json_decode($result, true, 512, JSON_THROW_ON_ERROR);
+
+        $this->assertIsArray($decoded);
 
         $this->assertEquals($data['name'], $decoded['name']);
         $this->assertEquals($data['value'], $decoded['value']);

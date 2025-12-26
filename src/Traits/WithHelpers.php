@@ -31,7 +31,7 @@ trait WithHelpers {
     /**
      * Создание строки CSS классов из массива
      *
-     * @param array<string|array<string, bool>> $classes Массив классов или условие => класс
+     * @param array<string>|array<string, bool> $classes Массив классов или условие => класс
      * @example class="<?= $this->classList(['btn', 'btn-primary']) ?>"
      * @example class="<?= $this->classList(['btn' => true, 'active' => $isActive]) ?>"
      */
@@ -47,7 +47,7 @@ trait WithHelpers {
                 }
             } else {
                 // Условный класс
-                if ($value && is_string($key) && $key !== '') {
+                if (is_bool($value) && $value && $key !== '') {
                     $result[] = $key;
                 }
             }
@@ -119,10 +119,6 @@ trait WithHelpers {
                 $date = new DateTime($date);
             }
 
-            if (!$date instanceof DateTimeInterface) {
-                return '';
-            }
-
             return $date->format($format);
         } catch (Exception) {
             // Ловим любые исключения DateTime и возвращаем пустую строку
@@ -137,7 +133,10 @@ trait WithHelpers {
      */
     public function json(mixed $data): string
     {
-        return json_encode($data, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE);
+        return (string)json_encode(
+            $data,
+            JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE
+        );
     }
 
     // ==================== FORMAT ====================
@@ -186,7 +185,7 @@ trait WithHelpers {
         $filteredParams = array_filter($allParams, fn($value) => $value !== null);
 
         // Строим новую query строку
-        $query = empty($filteredParams) ? '' : '?' . http_build_query($filteredParams);
+        $query = $filteredParams === [] ? '' : '?' . http_build_query($filteredParams);
 
         // Собираем URL обратно
         $result = '';
@@ -217,6 +216,7 @@ trait WithHelpers {
      */
     public function uniqueId(string $prefix = 'id_'): string
     {
+        /** @var int $counter */
         static $counter = 0;
         return $prefix . (++$counter);
     }

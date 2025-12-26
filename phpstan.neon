@@ -3,6 +3,7 @@ parameters:
   paths:
     - src
     - tests/Components
+    - tests/Traits/WithHelpersTest.php
   strictRules:
     disallowedLooseComparison: true
     booleansInConditions: true

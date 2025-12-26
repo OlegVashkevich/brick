@@ -179,22 +179,6 @@ class WithCacheTest extends TestCase
         $this->assertEquals(BrickManager::$cacheTtl, $ttl);
     }
 
-    public function testTtlPropertyIsReadonly(): void
-    {
-        // Проверяем что свойство ttl действительно readonly
-        $button1 = new CachedButtonTtl('Button 1');
-        $button2 = new CachedButton('Button 2');
-
-        $reflection1 = new ReflectionClass($button1);
-        $property1 = $reflection1->getProperty('ttl');
-
-        $reflection2 = new ReflectionClass($button2);
-        $property2 = $reflection2->getProperty('ttl');
-
-        $this->assertTrue($property1->isReadOnly());
-        $this->assertTrue($property2->isReadOnly());
-    }
-
     /**
      * @throws InvalidArgumentException
      * @throws JsonException
@@ -283,17 +267,16 @@ class WithCacheTest extends TestCase
         $button2 = new CachedButtonTtl('Button 2');
 
         $reflection1 = new ReflectionClass($button1);
-        $property1 = $reflection1->getProperty('ttl');
-
         $reflection2 = new ReflectionClass($button2);
-        $property2 = $reflection2->getProperty('ttl');
-
-        // Для CachedButtonTtl: свойство инициализировано как 600
-        $this->assertEquals(600, $property2->getValue($button2));
 
         // Для CachedButton: проверяем через getTtl() что используется дефолтное значение
         $method1 = $reflection1->getMethod('getTtl');
         $ttl1 = $method1->invoke($button1);
         $this->assertEquals(BrickManager::$cacheTtl, $ttl1);
+
+        // Для CachedButtonTtl: свойство инициализировано как 600
+        $method2 = $reflection2->getMethod('getTtl');
+        $ttl2 = $method2->invoke($button2);
+        $this->assertEquals(600, $ttl2);
     }
 }

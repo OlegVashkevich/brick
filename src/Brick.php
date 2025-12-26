@@ -124,7 +124,15 @@ abstract readonly class Brick
             $className = static::class;
             $manager = BrickManager::getInstance();
             $cached = $manager->getCachedComponent($className);
+
+            if (!isset($cached['templatePath'])) {
+                throw new RuntimeException(
+                    sprintf('Не найден путь к шаблону для компонента %s', $className)
+                );
+            }
+
             include $cached['templatePath'];
+
         } catch (Throwable $e) {
             ob_end_clean();
             throw new RuntimeException(

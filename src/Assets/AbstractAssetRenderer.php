@@ -123,7 +123,7 @@ abstract class AbstractAssetRenderer implements AssetRenderer
         $parts = explode('\\', $className);
         $lastPart = end($parts);
 
-        $id = preg_replace('/(?<!^)[A-Z]/', '-$0', $lastPart);
+        $id = (string) preg_replace('/(?<!^)[A-Z]/', '-$0', $lastPart);
         return strtolower($id);
     }
 
@@ -132,7 +132,7 @@ abstract class AbstractAssetRenderer implements AssetRenderer
      */
     public function setMode(string $mode): void
     {
-        if (!in_array($mode, [self::MODE_SINGLE, self::MODE_MULTIPLE])) {
+        if (!in_array($mode, [self::MODE_SINGLE, self::MODE_MULTIPLE], true)) {
             throw new InvalidArgumentException("Неизвестный режим: $mode");
         }
         $this->mode = $mode;
@@ -164,6 +164,7 @@ abstract class AbstractAssetRenderer implements AssetRenderer
 
     /**
      * Получить список доступных режимов
+     * @return array<string, string>
      */
     public static function getAvailableModes(): array
     {

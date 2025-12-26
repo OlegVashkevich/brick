@@ -12,11 +12,6 @@ use Psr\SimpleCache\InvalidArgumentException;
 trait WithCache
 {
     /**
-     * Внутреннее хранилище TTL
-     */
-    readonly private int $ttl;
-
-    /**
      * Рендерит компонент с кэшированием
      * @throws JsonException
      * @throws InvalidArgumentException
@@ -67,10 +62,17 @@ trait WithCache
         return md5(json_encode(get_object_vars($this), JSON_THROW_ON_ERROR));
     }
 
+    /**
+     * Переопределите в своем компоненте
+     * если для него требуется уникальное время кэширования
+     * Пример:
+     * protected function getTtl(): int
+     * {
+     *      return 600; // Кастомный TTL
+     * }
+     * @return int
+     */
     protected function getTtl(): int {
-        if(!isset($this->ttl)) {
-            $this->ttl = BrickManager::$cacheTtl;
-        }
-        return $this->ttl;
+        return BrickManager::$cacheTtl;
     }
 }
