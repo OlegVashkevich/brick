@@ -60,7 +60,7 @@ class WithHelpersTest extends TestCase
 
     public function testClassListWithEmptyValues(): void
     {
-        $result = $this->classList(['', 'btn', null => 'test']);
+        $result = $this->classList(['', 'btn', 'test']);
         $this->assertEquals('btn', $result);
     }
 
