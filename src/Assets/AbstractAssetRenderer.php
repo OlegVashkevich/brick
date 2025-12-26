@@ -6,13 +6,10 @@ namespace OlegV\Assets;
 
 use InvalidArgumentException;
 
-/**
- *  TODO: тесты и phpstan
- */
 abstract class AbstractAssetRenderer implements AssetRenderer
 {
-    protected const MODE_SINGLE = 'single';
-    protected const MODE_MULTIPLE = 'multiple';
+    public const MODE_SINGLE = 'single';
+    public const MODE_MULTIPLE = 'multiple';
 
     protected bool $minify = false;
     protected string $mode = self::MODE_SINGLE;
@@ -50,6 +47,9 @@ abstract class AbstractAssetRenderer implements AssetRenderer
         // Удаляем лишние пробелы и переносы строк
         $js = preg_replace('/\s+/', ' ', $js) ?? '';
 
+        // Удаляем пробелы вокруг операторов и скобок
+        $js = preg_replace('/\s*([{}()\[\];,=+\-*\/%<>!&|?:])\s*/', '$1', $js) ?? '';
+
         return trim($js);
     }
 
@@ -70,13 +70,13 @@ abstract class AbstractAssetRenderer implements AssetRenderer
         } else {
             $result = [];
             foreach ($cssAssets as $componentName => $css) {
-                if ($css === '') {
-                    continue;
-                }
                 $id = $this->getComponentId($componentName);
                 $processed = $css;
                 if ($this->minify) {
                     $processed = $this->minifyCss($processed);
+                }
+                if (trim($css) === '') {
+                    continue;
                 }
                 $result[$id] = $processed;
             }
@@ -101,13 +101,13 @@ abstract class AbstractAssetRenderer implements AssetRenderer
         } else {
             $result = [];
             foreach ($jsAssets as $componentName => $js) {
-                if ($js === '') {
-                    continue;
-                }
                 $id = $this->getComponentId($componentName);
                 $processed = $js;
                 if ($this->minify) {
                     $processed = $this->minifyJs($processed);
+                }
+                if (trim($js) === '') {
+                    continue;
                 }
                 $result[$id] = $processed;
             }

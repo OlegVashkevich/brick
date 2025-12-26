@@ -8,12 +8,13 @@ namespace OlegV\Traits;
 use JsonException;
 use OlegV\BrickManager;
 use Psr\SimpleCache\InvalidArgumentException;
-use RuntimeException;
-use Throwable;
 
 trait WithCache
 {
-
+    /**
+     * Внутреннее хранилище TTL
+     */
+    readonly private int $ttl;
 
     /**
      * Рендерит компонент с кэшированием
@@ -39,7 +40,7 @@ trait WithCache
 
         // Рендерим и сохраняем в кэш
         $html = $this->renderOriginal();
-        $cache->set($cacheKey, $html, BrickManager::$cacheTtl);
+        $cache->set($cacheKey, $html, $this->getTtl());
 
         return $html;
     }
@@ -50,27 +51,7 @@ trait WithCache
     private function renderOriginal(): string
     {
         return (function () {
-            ob_start();
-
-            try {
-                $className = static::class;
-                $manager = BrickManager::getInstance();
-                $cached = $manager->getCachedComponent($className);
-                include $cached['templatePath'];
-            } catch (Throwable $e) {
-                ob_end_clean();
-                throw new RuntimeException(
-                    sprintf(
-                        'Ошибка рендеринга компонента %s: %s',
-                        static::class,
-                        $e->getMessage()
-                    ),
-                    0,
-                    $e
-                );
-            }
-
-            return (string)ob_get_clean();
+            return parent::render();
         })->call($this);
     }
 
@@ -84,5 +65,12 @@ trait WithCache
     {
         // Быстрое получение всех публичных свойств
         return md5(json_encode(get_object_vars($this), JSON_THROW_ON_ERROR));
+    }
+
+    protected function getTtl(): int {
+        if(!isset($this->ttl)) {
+            $this->ttl = BrickManager::$cacheTtl;
+        }
+        return $this->ttl;
     }
 }

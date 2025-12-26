@@ -16,7 +16,6 @@ namespace OlegV\Assets;
  * );
  * $fileRenderer->setMinify(true);
  * $fileRenderer->setMode(InlineAssetRenderer::MODE_MULTIPLE);
- *  TODO: тесты и phpstan
  */
 class FileAssetRenderer extends AbstractAssetRenderer
 {

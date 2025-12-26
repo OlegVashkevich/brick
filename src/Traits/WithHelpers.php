@@ -109,6 +109,10 @@ trait WithHelpers {
     public function date(DateTimeInterface|int|string $date, string $format = 'd.m.Y'): string
     {
         try {
+            if (is_string($date) && trim($date) === '') {
+                return ''; // Пустая строка - возвращаем пустую строку
+            }
+
             if (is_numeric($date)) {
                 $date = new DateTime('@' . $date);
             } elseif (is_string($date)) {
@@ -162,13 +166,48 @@ trait WithHelpers {
      */
     public function url(string $baseUrl, array $params = []): string
     {
-        if (empty($params)) {
+        // Разделяем URL и query строку
+        $parsed = parse_url($baseUrl);
+
+        if ($parsed === false) {
             return htmlspecialchars($baseUrl, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         }
 
-        $query = http_build_query(array_filter($params, fn($value) => $value !== null));
+        // Получаем существующие параметры из query строки
+        $existingParams = [];
+        if (isset($parsed['query'])) {
+            parse_str($parsed['query'], $existingParams);
+        }
 
-        return htmlspecialchars($baseUrl . (!str_contains($baseUrl, '?') ? '?' : '&') . $query, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        // Объединяем существующие параметры с новыми (новые перезаписывают существующие)
+        $allParams = array_merge($existingParams, $params);
+
+        // Фильтруем null значения
+        $filteredParams = array_filter($allParams, fn($value) => $value !== null);
+
+        // Строим новую query строку
+        $query = empty($filteredParams) ? '' : '?' . http_build_query($filteredParams);
+
+        // Собираем URL обратно
+        $result = '';
+        if (isset($parsed['scheme'])) {
+            $result .= $parsed['scheme'] . '://';
+        }
+        if (isset($parsed['host'])) {
+            $result .= $parsed['host'];
+        }
+        if (isset($parsed['port'])) {
+            $result .= ':' . $parsed['port'];
+        }
+        if (isset($parsed['path'])) {
+            $result .= $parsed['path'];
+        }
+        $result .= $query;
+        if (isset($parsed['fragment'])) {
+            $result .= '#' . $parsed['fragment'];
+        }
+
+        return htmlspecialchars($result, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
 
     /**
@@ -190,7 +229,12 @@ trait WithHelpers {
      */
     public function wordCount(string $text): int
     {
-        return str_word_count($text);
+        if ($text === '') {
+            return 0;
+        }
+
+        setlocale(LC_ALL, 'ru_RU.UTF-8');
+        return str_word_count($text, 0, 'абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ');
     }
 
     /**
