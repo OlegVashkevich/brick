@@ -88,8 +88,11 @@ abstract readonly class Brick
                 css: $css,
                 js: $js
             );
+
+        } else {
+            //используем метод из trait WithInheritance
+            $this->initializeComponent($manager);
         }
-        $this->initializeComponent($manager);
     }
 
     /**
