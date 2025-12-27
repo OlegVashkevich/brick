@@ -47,11 +47,8 @@ trait WithHelpers
                 if (is_string($value) && $value !== '') {
                     $result[] = $value;
                 }
-            } else {
-                // Условный класс
-                if (is_bool($value) && $value && $key !== '') {
-                    $result[] = $key;
-                }
+            } elseif (is_bool($value) && $value && $key !== '') {
+                $result[] = $key;
             }
         }
 
@@ -71,6 +68,19 @@ trait WithHelpers
         foreach ($attributes as $name => $value) {
             if ($value === null || $value === false) {
                 continue;
+            }
+
+            // Фильтрация опасных атрибутов
+            if (str_starts_with($name, 'on') && strlen($name) > 2) {
+                // Пропускаем обработчики событий (onclick, onerror, etc.)
+                continue;
+            }
+
+            // Фильтрация javascript: в URL атрибутах
+            if (in_array($name, ['href', 'src', 'action', 'formaction'], true)) {
+                if (is_string($value) && stripos($value, 'javascript:') !== false) {
+                    continue;
+                }
             }
 
             if ($value === true) {
