@@ -13,26 +13,7 @@ trait WithInheritance
 {
     protected function initializeComponent(BrickManager $manager): void
     {
-        // Проверяем, что текущий класс не использует этот трейт
-        $currentClassTraits = class_uses($this);
-
         $className = static::class;
-        if (!in_array(WithInheritance::class, $currentClassTraits, true)) {
-            // Если текущий класс НЕ использует трейт - вызываем оригинальный метод Brick
-
-            $manager = BrickManager::getInstance();
-
-            // Проверяем кэш
-            if ($manager->isComponentCached($className)) {
-                $this->useCachedData($className, $manager);
-                return;
-            }
-
-            // Каждый класс сам решает, как он хочет инициализироваться
-            $this->initializeComponent($manager);
-
-            return;
-        }
 
         // ОДИН проход по иерархии
         $data = $this->findTemplateAndAssets();
