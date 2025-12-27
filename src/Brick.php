@@ -102,7 +102,7 @@ abstract readonly class Brick
      * @param  BrickManager  $manager
      * @return void
      */
-    private function useCachedData(string $className, BrickManager $manager): void
+    protected function useCachedData(string $className, BrickManager $manager): void
     {
         $cached = $manager->getCachedComponent($className);
 
