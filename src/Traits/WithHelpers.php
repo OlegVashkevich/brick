@@ -22,11 +22,14 @@ trait WithHelpers
      * Экранирование HTML специальных символов
      *
      * @example <?= $this->e($title) ?>
-     * @param  string  $value
+     * @param  ?string  $value
      * @return string
      */
-    public function e(string $value): string
+    public function e(?string $value = null): string
     {
+        if ($value === null) {
+            return '';
+        }
         return htmlspecialchars($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
     }
 
