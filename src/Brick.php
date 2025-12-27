@@ -14,6 +14,7 @@ declare(strict_types=1);
 
 namespace OlegV;
 
+use OlegV\Traits\WithInheritance;
 use ReflectionClass;
 use RuntimeException;
 use Throwable;
@@ -49,52 +50,56 @@ abstract readonly class Brick
      */
     public function __construct()
     {
+        // Проверяем, что текущий класс не использует этот трейт
+        $currentClassTraits = class_uses($this);
+
         $className = static::class;
 
         $manager = BrickManager::getInstance();
 
-        // Проверяем кэш
-        if ($manager->isComponentCached($className)) {
-            $this->useCachedData($className, $manager);
-            return;
-        }
+        if (!in_array(WithInheritance::class, $currentClassTraits, true)) {
 
-        // Каждый класс сам решает, как он хочет инициализироваться
+            // Проверяем кэш
+            if ($manager->isComponentCached($className)) {
+                $this->useCachedData($className, $manager);
+                return;
+            }
+
+            $reflection = new ReflectionClass($className);
+            $dir = dirname((string) $reflection->getFileName());
+            $templatePath = $dir.'/template.php';
+
+            if (!file_exists($templatePath)) {
+                throw new RuntimeException("template.php не найден");
+            }
+
+            $css = file_exists($dir.'/style.css')
+                ? (string) file_get_contents($dir.'/style.css')
+                : '';
+            $js = file_exists($dir.'/script.js')
+                ? (string) file_get_contents($dir.'/script.js')
+                : '';
+
+            // Кэшируем в менеджере
+            $manager->cacheComponent(
+                className: $className,
+                dir: $dir,
+                templatePath: $templatePath,
+                css: $css,
+                js: $js
+            );
+        }
         $this->initializeComponent($manager);
     }
 
     /**
      * Метод инициализации, который переопределяют компоненты
-     * По умолчанию - стандартная инициализация
+     * Заглушка для WithInheritance
      * @param  BrickManager  $manager
      */
     protected function initializeComponent(BrickManager $manager): void
     {
-        $className = static::class;
 
-        $reflection = new ReflectionClass($className);
-        $dir = dirname((string) $reflection->getFileName());
-        $templatePath = $dir.'/template.php';
-
-        if (!file_exists($templatePath)) {
-            throw new RuntimeException("template.php не найден");
-        }
-
-        $css = file_exists($dir.'/style.css')
-            ? (string) file_get_contents($dir.'/style.css')
-            : '';
-        $js = file_exists($dir.'/script.js')
-            ? (string) file_get_contents($dir.'/script.js')
-            : '';
-
-        // Кэшируем в менеджере
-        $manager->cacheComponent(
-            className: $className,
-            dir: $dir,
-            templatePath: $templatePath,
-            css: $css,
-            js: $js
-        );
     }
 
     /**
