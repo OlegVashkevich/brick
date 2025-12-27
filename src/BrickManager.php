@@ -18,13 +18,13 @@ final class BrickManager
     private static ?self $instance = null;
 
     /**
-     * CSS ассеты всех компонентов
+     * CSS Асеты всех компонентов
      * @var array<string, string>
      */
     private array $cssAssets = [];
 
     /**
-     * JS ассеты всех компонентов
+     * JS Асеты всех компонентов
      * @var array<string, string>
      */
     private array $jsAssets = [];
@@ -40,9 +40,8 @@ final class BrickManager
     public static int $cacheTtl = 3600;
 
     public function __construct(
-        private readonly AssetRenderer $assetRenderer = new Assets\InlineAssetRenderer()
-    ) {
-    }
+        private readonly AssetRenderer $assetRenderer = new Assets\InlineAssetRenderer(),
+    ) {}
 
     public static function getInstance(): self
     {
@@ -75,13 +74,13 @@ final class BrickManager
         string $dir,
         string $templatePath,
         string $css,
-        string $js
+        string $js,
     ): void {
         $this->classCache[$className] = [
             'dir' => $dir,
             'templatePath' => $templatePath,
             'css' => $css,
-            'js' => $js
+            'js' => $js,
         ];
 
         if ($css !== '') {
@@ -107,7 +106,7 @@ final class BrickManager
         return isset($this->classCache[$className]);
     }
 
-    // ==================== Управление ассетами ====================
+    // ==================== Управление асетами ====================
 
     public function renderCss(): string
     {
@@ -137,10 +136,10 @@ final class BrickManager
         }
 
         if ($css !== '' && $js !== '') {
-            return $css . "\n" . $js;
+            return $css."\n".$js;
         }
 
-        return $css . $js;
+        return $css.$js;
     }
 
     // ==================== Утилиты ====================
@@ -160,7 +159,7 @@ final class BrickManager
         return [
             'cached_classes' => count($this->classCache),
             'css_assets' => count($this->cssAssets),
-            'js_assets' => count($this->jsAssets)
+            'js_assets' => count($this->jsAssets),
         ];
     }
 }

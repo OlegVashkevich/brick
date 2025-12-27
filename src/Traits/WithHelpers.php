@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OlegV\Traits;
 
 use DateTime;
@@ -10,9 +12,9 @@ use Exception;
  * Трейт с расширенным набором вспомогательных методов для шаблонов
  *
  * Предоставляет базовые утилиты для работы с HTML, CSS классами, атрибутами
- * TODO: тесты и phpstan
  */
-trait WithHelpers {
+trait WithHelpers
+{
 
     // ==================== BASE ====================
 
@@ -31,7 +33,7 @@ trait WithHelpers {
     /**
      * Создание строки CSS классов из массива
      *
-     * @param array<string>|array<string, bool> $classes Массив классов или условие => класс
+     * @param  array<string>|array<string, bool>  $classes  Массив классов или условие => класс
      * @example class="<?= $this->classList(['btn', 'btn-primary']) ?>"
      * @example class="<?= $this->classList(['btn' => true, 'active' => $isActive]) ?>"
      */
@@ -59,7 +61,7 @@ trait WithHelpers {
     /**
      * Форматирование HTML атрибутов из массива
      *
-     * @param array<string, string|int|bool|null> $attributes
+     * @param  array<string, string|int|bool|null>  $attributes
      * @example <?= $this->attr(['id' => 'btn', 'data-value' => $value]) ?>
      */
     public function attr(array $attributes): string
@@ -86,16 +88,16 @@ trait WithHelpers {
     /**
      * Форматирование числа с разделителями тысяч
      *
-     * @param  float|int  $number Число для форматирования
-     * @param int $decimals Количество знаков после запятой
-     * @param string $decimalSeparator Разделитель дробной части
-     * @param string $thousandsSeparator Разделитель тысяч
+     * @param  float|int  $number  Число для форматирования
+     * @param  int  $decimals  Количество знаков после запятой
+     * @param  string  $decimalSeparator  Разделитель дробной части
+     * @param  string  $thousandsSeparator  Разделитель тысяч
      */
     public function number(
         float|int $number,
         int $decimals = 0,
         string $decimalSeparator = ',',
-        string $thousandsSeparator = ' '
+        string $thousandsSeparator = ' ',
     ): string {
         return number_format($number, $decimals, $decimalSeparator, $thousandsSeparator);
     }
@@ -114,7 +116,7 @@ trait WithHelpers {
             }
 
             if (is_numeric($date)) {
-                $date = new DateTime('@' . $date);
+                $date = new DateTime('@'.$date);
             } elseif (is_string($date)) {
                 $date = new DateTime($date);
             }
@@ -129,13 +131,13 @@ trait WithHelpers {
     /**
      * JSON кодирование с экранированием для JavaScript
      *
-     * @param mixed $data Данные для кодирования
+     * @param  mixed  $data  Данные для кодирования
      */
     public function json(mixed $data): string
     {
         return (string)json_encode(
             $data,
-            JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE
+            JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE,
         );
     }
 
@@ -144,9 +146,9 @@ trait WithHelpers {
     /**
      * Обрезание строки до указанной длины с добавлением суффикса
      *
-     * @param string $text Текст для обрезки
-     * @param int $length Максимальная длина
-     * @param string $suffix Суффикс для обрезанного текста
+     * @param  string  $text  Текст для обрезки
+     * @param  int  $length  Максимальная длина
+     * @param  string  $suffix  Суффикс для обрезанного текста
      */
     public function truncate(string $text, int $length = 100, string $suffix = '...'): string
     {
@@ -154,14 +156,14 @@ trait WithHelpers {
             return $text;
         }
 
-        return mb_substr($text, 0, $length - mb_strlen($suffix)) . $suffix;
+        return mb_substr($text, 0, $length - mb_strlen($suffix)).$suffix;
     }
 
     /**
      * Создание URL с query параметрами
      *
-     * @param string $baseUrl Базовый URL
-     * @param array<string, string|int|bool|null> $params Query параметры
+     * @param  string  $baseUrl  Базовый URL
+     * @param  array<string, string|int|bool|null>  $params  Query параметры
      */
     public function url(string $baseUrl, array $params = []): string
     {
@@ -185,25 +187,25 @@ trait WithHelpers {
         $filteredParams = array_filter($allParams, fn($value) => $value !== null);
 
         // Строим новую query строку
-        $query = $filteredParams === [] ? '' : '?' . http_build_query($filteredParams);
+        $query = $filteredParams === [] ? '' : '?'.http_build_query($filteredParams);
 
         // Собираем URL обратно
         $result = '';
         if (isset($parsed['scheme'])) {
-            $result .= $parsed['scheme'] . '://';
+            $result .= $parsed['scheme'].'://';
         }
         if (isset($parsed['host'])) {
             $result .= $parsed['host'];
         }
         if (isset($parsed['port'])) {
-            $result .= ':' . $parsed['port'];
+            $result .= ':'.$parsed['port'];
         }
         if (isset($parsed['path'])) {
             $result .= $parsed['path'];
         }
         $result .= $query;
         if (isset($parsed['fragment'])) {
-            $result .= '#' . $parsed['fragment'];
+            $result .= '#'.$parsed['fragment'];
         }
 
         return htmlspecialchars($result, ENT_QUOTES | ENT_HTML5, 'UTF-8');
@@ -212,13 +214,13 @@ trait WithHelpers {
     /**
      * Генерация уникального ID (для использования в HTML)
      *
-     * @param string $prefix Префикс для ID
+     * @param  string  $prefix  Префикс для ID
      */
     public function uniqueId(string $prefix = 'id_'): string
     {
         /** @var int $counter */
         static $counter = 0;
-        return $prefix . (++$counter);
+        return $prefix.(++$counter);
     }
 
     /**
@@ -240,8 +242,8 @@ trait WithHelpers {
     /**
      * Создание строки с учетом множественного числа
      *
-     * @param int $count Количество
-     * @param array{0: string, 1: string, 2: string} $forms Формы слова для разных чисел
+     * @param  int  $count  Количество
+     * @param  array{0: string, 1: string, 2: string}  $forms  Формы слова для разных чисел
      * @example $this->plural(5, ['комментарий', 'комментария', 'комментариев'])
      */
     public function plural(int $count, array $forms): string

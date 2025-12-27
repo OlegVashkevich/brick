@@ -24,7 +24,7 @@ trait WithInheritance
             dir: $data['dir'],
             templatePath: $data['templatePath'],
             css: $data['css'],
-            js: $data['js']
+            js: $data['js'],
         );
     }
 
@@ -45,29 +45,29 @@ trait WithInheritance
 
         // Проходим всю цепочку до Brick
         while ($currentClass) {
-            $dir = dirname((string) $currentClass->getFileName());
+            $dir = dirname((string)$currentClass->getFileName());
 
             // Ищем template (первый найденный - от самого "старшего" родителя)
             if ($templatePath === '') {
-                $possibleTemplate = $dir . '/template.php';
+                $possibleTemplate = $dir.'/template.php';
                 if (file_exists($possibleTemplate)) {
                     $templatePath = $possibleTemplate;
                 }
             }
 
             // CSS
-            $cssPath = $dir . '/style.css';
+            $cssPath = $dir.'/style.css';
             if (file_exists($cssPath)) {
-                $cssContent = (string) file_get_contents($cssPath);
+                $cssContent = (string)file_get_contents($cssPath);
                 if ($cssContent !== '') {
                     $cssParts[] = $cssContent;
                 }
             }
 
             // JS
-            $jsPath = $dir . '/script.js';
+            $jsPath = $dir.'/script.js';
             if (file_exists($jsPath)) {
-                $jsContent = (string) file_get_contents($jsPath);
+                $jsContent = (string)file_get_contents($jsPath);
                 if ($jsContent !== '') {
                     $jsParts[] = $jsContent;
                 }
@@ -91,7 +91,7 @@ trait WithInheritance
             'dir' => dirname($templatePath),
             'templatePath' => $templatePath,
             'css' => implode("\n\n", array_reverse($cssParts)),
-            'js' => implode("\n\n", array_reverse($jsParts))
+            'js' => implode("\n\n", array_reverse($jsParts)),
         ];
     }
 }

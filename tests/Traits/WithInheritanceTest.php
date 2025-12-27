@@ -1,16 +1,22 @@
 <?php
+
+declare(strict_types=1);
+
 namespace OlegV\Tests\Traits;
 
 use OlegV\BrickManager;
-use OlegV\Tests\Components;
+use OlegV\Tests\Components\Button\Button;
+use OlegV\Tests\Components\Card\Card;
+use OlegV\Tests\Components\InvalidComponent\InvalidComponent;
+use OlegV\Tests\Components\PrimaryButton\PrimaryButton;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
 // Подключаем реальные компоненты
-require_once __DIR__ . '/../Components/Button/Button.php';
-require_once __DIR__ . '/../Components/PrimaryButton/PrimaryButton.php';
-require_once __DIR__ . '/../Components/Card/Card.php';
-require_once __DIR__ . '/../Components/InvalidComponent/InvalidComponent.php';
+require_once __DIR__.'/../Components/Button/Button.php';
+require_once __DIR__.'/../Components/PrimaryButton/PrimaryButton.php';
+require_once __DIR__.'/../Components/Card/Card.php';
+require_once __DIR__.'/../Components/InvalidComponent/InvalidComponent.php';
 
 class WithInheritanceTest extends TestCase
 {
@@ -28,7 +34,7 @@ class WithInheritanceTest extends TestCase
 
     public function testButtonComponentRendersCorrectly(): void
     {
-        $button = new Components\Button('Click me', 'primary');
+        $button = new Button('Click me', 'primary');
         $result = $button->render();
 
         $this->assertStringContainsString('class="btn btn-primary"', $result);
@@ -38,7 +44,7 @@ class WithInheritanceTest extends TestCase
 
     public function testButtonWithDisabledState(): void
     {
-        $button = new Components\Button('Submit', 'secondary', true);
+        $button = new Button('Submit', 'secondary', true);
         $result = $button->render();
 
         $this->assertStringContainsString('class="btn btn-secondary disabled"', $result);
@@ -47,7 +53,7 @@ class WithInheritanceTest extends TestCase
 
     public function testPrimaryButtonInheritsFromButton(): void
     {
-        $button = new Components\PrimaryButton('Special Button');
+        $button = new PrimaryButton('Special Button');
         $result = $button->render();
 
         // Должен использовать шаблон от Button
@@ -57,9 +63,9 @@ class WithInheritanceTest extends TestCase
 
     public function testPrimaryButtonInheritsFromButton2(): void
     {
-        $button = new Components\PrimaryButton('Special Button');
+        $button = new PrimaryButton('Special Button');
         $result = $button->render();
-        $button2 = new Components\PrimaryButton('Special Button2');
+        $button2 = new PrimaryButton('Special Button2');
         $result2 = $button2->render();
 
         // Должен использовать шаблон от Button
@@ -74,8 +80,8 @@ class WithInheritanceTest extends TestCase
     public function testCssInheritanceAndOverride(): void
     {
         // Создаем оба компонента для регистрации CSS
-        $button = new Components\Button();
-        $primaryButton = new Components\PrimaryButton();
+        new Button();
+        new PrimaryButton();
 
         $css = BrickManager::getInstance()->renderCss();
 
@@ -93,13 +99,16 @@ class WithInheritanceTest extends TestCase
         $buttonPos = strpos($css, '.btn {');
         $primaryOverridePos = strpos($css, 'background-color: #28a745');
 
-        $this->assertLessThan($primaryOverridePos, $buttonPos,
-            'Базовые стили Button должны быть перед переопределениями PrimaryButton');
+        $this->assertLessThan(
+            $primaryOverridePos,
+            $buttonPos,
+            'Базовые стили Button должны быть перед переопределениями PrimaryButton',
+        );
     }
 
     public function testJsInheritance(): void
     {
-        $button = new Components\Button();
+        new Button();
         $js = BrickManager::getInstance()->renderJs();
 
         $this->assertStringContainsString('Button clicked:', $js);
@@ -108,10 +117,10 @@ class WithInheritanceTest extends TestCase
 
     public function testCardComponent(): void
     {
-        $card = new Components\Card(
+        $card = new Card(
             'Test Title',
             '<p>Test content with <strong>HTML</strong></p>',
-            'Footer text'
+            'Footer text',
         );
 
         $result = $card->render();
@@ -125,7 +134,7 @@ class WithInheritanceTest extends TestCase
 
     public function testCardWithoutOptionalParts(): void
     {
-        $card = new Components\Card('', 'Just content');
+        $card = new Card('', 'Just content');
         $result = $card->render();
 
         $this->assertStringNotContainsString('card-header', $result);
@@ -135,7 +144,7 @@ class WithInheritanceTest extends TestCase
 
     public function testCardCssAssets(): void
     {
-        $card = new Components\Card();
+        new Card();
         $css = BrickManager::getInstance()->renderCss();
 
         $this->assertStringContainsString('.card {', $css);
@@ -146,9 +155,9 @@ class WithInheritanceTest extends TestCase
     public function testRenderAllAssets(): void
     {
         // Создаем все компоненты
-        new Components\Button();
-        new Components\PrimaryButton();
-        new Components\Card();
+        new Button();
+        new PrimaryButton();
+        new Card();
 
         $assets = BrickManager::getInstance()->renderAssets();
 
@@ -164,6 +173,6 @@ class WithInheritanceTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('template.php не найден');
 
-        new Components\InvalidComponent();
+        new InvalidComponent();
     }
 }

@@ -17,7 +17,10 @@ class WithHelpersTest extends TestCase
 
     public function testEscape(): void
     {
-        $this->assertEquals('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;', $this->e('<script>alert("xss")</script>'));
+        $this->assertEquals(
+            '&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;',
+            $this->e('<script>alert("xss")</script>'),
+        );
         $this->assertEquals('I&apos;m a &quot;test&quot;', $this->e('I\'m a "test"'));
         $this->assertEquals('Привет мир', $this->e('Привет мир'));
     }
@@ -90,7 +93,10 @@ class WithHelpersTest extends TestCase
             'onclick' => 'alert("test")',
         ]);
 
-        $this->assertStringContainsString('data-text="Test &quot;quote&quot; and &apos;apos&apos; &amp; ampersand"', $result);
+        $this->assertStringContainsString(
+            'data-text="Test &quot;quote&quot; and &apos;apos&apos; &amp; ampersand"',
+            $result,
+        );
         $this->assertStringContainsString('onclick="alert(&quot;test&quot;)"', $result);
     }
 
@@ -169,51 +175,51 @@ class WithHelpersTest extends TestCase
     {
         $this->assertEquals(
             '/page',
-            $this->url('/page')
+            $this->url('/page'),
         );
 
         $this->assertEquals(
             '/page?id=1&amp;search=test',
-            $this->url('/page', ['id' => 1, 'search' => 'test'])
+            $this->url('/page', ['id' => 1, 'search' => 'test']),
         );
 
         // Исправленный тест - параметр page должен быть заменен
         $this->assertEquals(
             '/page?page=2&amp;query=hello+world',
-            $this->url('/page?page=1', ['page' => 2, 'query' => 'hello world'])
+            $this->url('/page?page=1', ['page' => 2, 'query' => 'hello world']),
         );
 
         $this->assertEquals(
             '/search?q=test&amp;page=1',
-            $this->url('/search', ['q' => 'test', 'page' => 1, 'sort' => null])
+            $this->url('/search', ['q' => 'test', 'page' => 1, 'sort' => null]),
         );
 
         // Дополнительные тесты на замену параметров
         $this->assertEquals(
             '/item?id=2',
-            $this->url('/item?id=1', ['id' => 2])
+            $this->url('/item?id=1', ['id' => 2]),
         );
 
         $this->assertEquals(
             '/test?a=3&amp;b=4',
-            $this->url('/test?a=1&b=2', ['a' => 3, 'b' => 4])
+            $this->url('/test?a=1&b=2', ['a' => 3, 'b' => 4]),
         );
 
         // Test with special characters
         $this->assertStringContainsString(
             'q=test%26value',
-            $this->url('/search', ['q' => 'test&value'])
+            $this->url('/search', ['q' => 'test&value']),
         );
 
         // Test with fragment
         $this->assertEquals(
             '/page#section',
-            $this->url('/page#section')
+            $this->url('/page#section'),
         );
 
         $this->assertEquals(
             '/page?param=value#section',
-            $this->url('/page?param=old#section', ['param' => 'value'])
+            $this->url('/page?param=old#section', ['param' => 'value']),
         );
     }
 

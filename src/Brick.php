@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * 🧱 Brick - Базовый PHP класс для UI-компонентов
  * Механизм для создания типизированных, композитных UI-компонентов.
@@ -9,8 +11,6 @@
  * @version 0.0.1
  * @license MIT
  */
-
-declare(strict_types=1);
 
 namespace OlegV;
 
@@ -58,7 +58,6 @@ abstract readonly class Brick
         $manager = BrickManager::getInstance();
 
         if (!in_array(WithInheritance::class, $currentClassTraits, true)) {
-
             // Проверяем кэш
             if ($manager->isComponentCached($className)) {
                 $this->useCachedData($className, $manager);
@@ -66,7 +65,7 @@ abstract readonly class Brick
             }
 
             $reflection = new ReflectionClass($className);
-            $dir = dirname((string) $reflection->getFileName());
+            $dir = dirname((string)$reflection->getFileName());
             $templatePath = $dir.'/template.php';
 
             if (!file_exists($templatePath)) {
@@ -74,10 +73,10 @@ abstract readonly class Brick
             }
 
             $css = file_exists($dir.'/style.css')
-                ? (string) file_get_contents($dir.'/style.css')
+                ? (string)file_get_contents($dir.'/style.css')
                 : '';
             $js = file_exists($dir.'/script.js')
-                ? (string) file_get_contents($dir.'/script.js')
+                ? (string)file_get_contents($dir.'/script.js')
                 : '';
 
             // Кэшируем в менеджере
@@ -86,9 +85,8 @@ abstract readonly class Brick
                 dir: $dir,
                 templatePath: $templatePath,
                 css: $css,
-                js: $js
+                js: $js,
             );
-
         } else {
             //используем метод из trait WithInheritance
             $this->initializeComponent($manager);
@@ -100,10 +98,8 @@ abstract readonly class Brick
      * Заглушка для WithInheritance
      * @param  BrickManager  $manager
      */
-    protected function initializeComponent(BrickManager $manager): void
-    {
+    protected function initializeComponent(BrickManager $manager): void {}
 
-    }
 
     /**
      * @param  string  $className
@@ -116,7 +112,7 @@ abstract readonly class Brick
 
         if ($cached === null) {
             throw new RuntimeException(
-                sprintf('Кэшированные данные не найдены для %s', $className)
+                sprintf('Кэшированные данные не найдены для %s', $className),
             );
         }
     }
@@ -135,26 +131,25 @@ abstract readonly class Brick
 
             if (!isset($cached['templatePath'])) {
                 throw new RuntimeException(
-                    sprintf('Не найден путь к шаблону для компонента %s', $className)
+                    sprintf('Не найден путь к шаблону для компонента %s', $className),
                 );
             }
 
             include $cached['templatePath'];
-
         } catch (Throwable $e) {
             ob_end_clean();
             throw new RuntimeException(
                 sprintf(
                     'Ошибка рендеринга компонента %s: %s',
                     static::class,
-                    $e->getMessage()
+                    $e->getMessage(),
                 ),
                 0,
-                $e
+                $e,
             );
         }
 
-        return (string) ob_get_clean();
+        return (string)ob_get_clean();
     }
 
     /**

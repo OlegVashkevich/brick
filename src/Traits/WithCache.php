@@ -1,6 +1,5 @@
 <?php
 
-
 declare(strict_types=1);
 
 namespace OlegV\Traits;
@@ -20,7 +19,7 @@ trait WithCache
     {
         $cache = BrickManager::getCache();
         // Если кэш не настроен - обычный рендер
-        if ($cache===null) {
+        if ($cache === null) {
             return $this->renderOriginal();
         }
 
@@ -72,7 +71,8 @@ trait WithCache
      * }
      * @return int
      */
-    protected function ttl(): int {
+    protected function ttl(): int
+    {
         return BrickManager::$cacheTtl;
     }
 }

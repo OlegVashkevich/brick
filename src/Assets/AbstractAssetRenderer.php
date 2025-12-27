@@ -123,7 +123,7 @@ abstract class AbstractAssetRenderer implements AssetRenderer
         $parts = explode('\\', $className);
         $lastPart = end($parts);
 
-        $id = (string) preg_replace('/(?<!^)[A-Z]/', '-$0', $lastPart);
+        $id = (string)preg_replace('/(?<!^)[A-Z]/', '-$0', $lastPart);
         return strtolower($id);
     }
 
@@ -170,7 +170,7 @@ abstract class AbstractAssetRenderer implements AssetRenderer
     {
         return [
             self::MODE_SINGLE => 'Все компоненты в один файл',
-            self::MODE_MULTIPLE => 'Каждый компонент в отдельный файл'
+            self::MODE_MULTIPLE => 'Каждый компонент в отдельный файл',
         ];
     }
 }

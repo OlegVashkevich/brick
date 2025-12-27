@@ -1,13 +1,26 @@
 <?php
-namespace OlegV\Tests\Components;
+
+declare(strict_types=1);
+
+namespace OlegV\Tests\Components\CachedButtonTtl;
+
 use OlegV\Brick;
 use OlegV\Traits\WithCache;
 
-readonly class CachedButtonTtl extends Brick {
-    use WithCache; //теперь компонент кэшируется
-    public function __construct(public string $text = "Click me", public string $variant = "primary", public bool $disabled = false) {
+readonly class CachedButtonTtl extends Brick
+{
+    use WithCache;
+
+    //теперь компонент кэшируется
+
+    public function __construct(
+        public string $text = "Click me",
+        public string $variant = "primary",
+        public bool $disabled = false,
+    ) {
         parent::__construct();
     }
+
     protected function ttl(): int
     {
         return 600; //время кэша изменено

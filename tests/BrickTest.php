@@ -1,35 +1,13 @@
 <?php
+
+declare(strict_types=1);
+
 namespace OlegV\Tests;
 
-use OlegV\Brick;
 use OlegV\BrickManager;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
-/**
- * Тестовый компонент для проверки Brick
- */
-readonly class TestButton extends Brick
-{
-    public function __construct(
-        public string $text,
-        public string $variant = 'primary'
-    ) {
-        parent::__construct();
-    }
-}
-
-/**
- * Тестовый компонент без CSS/JS
- */
-readonly class TestSimpleComponent extends Brick
-{
-    public function __construct(
-        public string $content = 'test'
-    ) {
-        parent::__construct();
-    }
-}
 
 class BrickTest extends TestCase
 {
@@ -41,7 +19,7 @@ class BrickTest extends TestCase
         BrickManager::getInstance()->clear();
 
         // Создаем директорию для тестовых компонентов
-        $this->testComponentsDir = __DIR__ . '/test_components';
+        $this->testComponentsDir = __DIR__.'/test_components';
         if (!is_dir($this->testComponentsDir)) {
             mkdir($this->testComponentsDir, 0777, true);
         }
@@ -65,7 +43,7 @@ class BrickTest extends TestCase
 
         $files = array_diff(scandir($dir), ['.', '..']);
         foreach ($files as $file) {
-            $path = $dir . '/' . $file;
+            $path = $dir.'/'.$file;
             is_dir($path) ? $this->removeDirectory($path) : unlink($path);
         }
         rmdir($dir);
@@ -78,29 +56,29 @@ class BrickTest extends TestCase
      */
     private function createTestComponent(string $className, array $files = []): void
     {
-        $componentDir = $this->testComponentsDir . '/' . $className;
+        $componentDir = $this->testComponentsDir.'/'.$className;
         if (!is_dir($componentDir)) {
             mkdir($componentDir, 0777, true);
         }
 
         // Создаем PHP класс
         if (isset($files['php'])) {
-            file_put_contents($componentDir . '/' . $className . '.php', $files['php']);
+            file_put_contents($componentDir.'/'.$className.'.php', $files['php']);
         }
 
         // Создаем шаблон
         if (isset($files['template'])) {
-            file_put_contents($componentDir . '/template.php', $files['template']);
+            file_put_contents($componentDir.'/template.php', $files['template']);
         }
 
         // Создаем CSS
         if (isset($files['css'])) {
-            file_put_contents($componentDir . '/style.css', $files['css']);
+            file_put_contents($componentDir.'/style.css', $files['css']);
         }
 
         // Создаем JS
         if (isset($files['js'])) {
-            file_put_contents($componentDir . '/script.js', $files['js']);
+            file_put_contents($componentDir.'/script.js', $files['js']);
         }
     }
 
@@ -109,12 +87,14 @@ class BrickTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('template.php не найден');
 
-        eval('
+        eval(
+        '
             namespace OlegV\Tests;
             readonly class InvalidComponent extends \OlegV\Brick {
                 // Не будет файла template.php
             }
-        ');
+        '
+        );
 
         $className = 'OlegV\Tests\InvalidComponent';
         new $className();
@@ -124,13 +104,14 @@ class BrickTest extends TestCase
     {
         $this->createTestComponent('ValidComponent', [
             'php' => '<?php namespace OlegV\Tests; readonly class ValidComponent extends \OlegV\Brick { public function __construct(public string $title = "test") { parent::__construct(); } }',
-            'template' => '<div class="test"><?= $this->e($this->title) ?></div>'
+            'template' => '<div class="test"><?= $this->e($this->title) ?></div>',
         ]);
 
         // Подключаем файл с классом
-        require_once $this->testComponentsDir . '/ValidComponent/ValidComponent.php';
+        require_once $this->testComponentsDir.'/ValidComponent/ValidComponent.php';
 
-        $component = new \OlegV\Tests\ValidComponent('Hello World');
+        /** @noinspection PhpUndefinedClassInspection */
+        $component = new ValidComponent('Hello World');
         $result = $component->render();
 
         $this->assertEquals('<div class="test">Hello World</div>', $result);
@@ -140,12 +121,13 @@ class BrickTest extends TestCase
     {
         $this->createTestComponent('ToStringComponent', [
             'php' => '<?php namespace OlegV\Tests; readonly class ToStringComponent extends \OlegV\Brick { public function __construct(public string $value = "test") { parent::__construct(); } }',
-            'template' => '<span><?= $this->value ?></span>'
+            'template' => '<span><?= $this->value ?></span>',
         ]);
 
-        require_once $this->testComponentsDir . '/ToStringComponent/ToStringComponent.php';
+        require_once $this->testComponentsDir.'/ToStringComponent/ToStringComponent.php';
 
-        $component = new \OlegV\Tests\ToStringComponent('Test Value');
+        /** @noinspection PhpUndefinedClassInspection */
+        $component = new ToStringComponent('Test Value');
 
         $this->assertEquals('<span>Test Value</span>', (string)$component);
     }
@@ -157,12 +139,13 @@ class BrickTest extends TestCase
                 public function __construct(public string $content = "") { parent::__construct(); } 
                 public function testEscape() { return $this->e($this->content); }
             }',
-            'template' => '<div><?= $this->testEscape() ?></div>'
+            'template' => '<div><?= $this->testEscape() ?></div>',
         ]);
 
-        require_once $this->testComponentsDir . '/EscapeComponent/EscapeComponent.php';
+        require_once $this->testComponentsDir.'/EscapeComponent/EscapeComponent.php';
 
-        $component = new \OlegV\Tests\EscapeComponent('<script>alert("xss")</script>');
+        /** @noinspection PhpUndefinedClassInspection */
+        $component = new EscapeComponent('<script>alert("xss")</script>');
         $result = $component->render();
 
         $this->assertEquals('<div>&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;</div>', $result);
@@ -179,12 +162,13 @@ class BrickTest extends TestCase
                     return $this->classList(["btn", "primary", "", null, false ? "hidden" : "visible"]); 
                 }
             }',
-            'template' => '<div class="<?= $this->testClassList() ?>">test</div>'
+            'template' => '<div class="<?= $this->testClassList() ?>">test</div>',
         ]);
 
-        require_once $this->testComponentsDir . '/ClassListComponent/ClassListComponent.php';
+        require_once $this->testComponentsDir.'/ClassListComponent/ClassListComponent.php';
 
-        $component = new \OlegV\Tests\ClassListComponent();
+        /** @noinspection PhpUndefinedClassInspection */
+        $component = new ClassListComponent();
         $result = $component->render();
 
         $this->assertEquals('<div class="btn primary visible">test</div>', $result);
@@ -198,13 +182,14 @@ class BrickTest extends TestCase
             }',
             'template' => '<div>test</div>',
             'css' => '.asset-component { color: red; }',
-            'js' => 'console.log("AssetComponent loaded");'
+            'js' => 'console.log("AssetComponent loaded");',
         ]);
 
-        require_once $this->testComponentsDir . '/AssetComponent/AssetComponent.php';
+        require_once $this->testComponentsDir.'/AssetComponent/AssetComponent.php';
 
-        // Создаем компонент для регистрации ассетов
-        new \OlegV\Tests\AssetComponent();
+        // Создаем компонент для регистрации асетов
+        /** @noinspection PhpUndefinedClassInspection */
+        new AssetComponent();
 
         $css = BrickManager::getInstance()->renderCss();
         $js = BrickManager::getInstance()->renderJs();
@@ -225,7 +210,7 @@ class BrickTest extends TestCase
                 public function __construct() { parent::__construct(); } 
             }',
             'template' => '<div>A</div>',
-            'css' => '.component-a { color: blue; }'
+            'css' => '.component-a { color: blue; }',
         ]);
 
         // Создаем второй компонент
@@ -234,15 +219,17 @@ class BrickTest extends TestCase
                 public function __construct() { parent::__construct(); } 
             }',
             'template' => '<div>B</div>',
-            'js' => 'console.log("ComponentB");'
+            'js' => 'console.log("ComponentB");',
         ]);
 
-        require_once $this->testComponentsDir . '/ComponentA/ComponentA.php';
-        require_once $this->testComponentsDir . '/ComponentB/ComponentB.php';
+        require_once $this->testComponentsDir.'/ComponentA/ComponentA.php';
+        require_once $this->testComponentsDir.'/ComponentB/ComponentB.php';
 
         // Создаем оба компонента
-        new \OlegV\Tests\ComponentA();
-        new \OlegV\Tests\ComponentB();
+        /** @noinspection PhpUndefinedClassInspection */
+        new ComponentA();
+        /** @noinspection PhpUndefinedClassInspection */
+        new ComponentB();
 
         $css = BrickManager::getInstance()->renderCss();
         $js = BrickManager::getInstance()->renderJs();
@@ -263,12 +250,13 @@ class BrickTest extends TestCase
                 public function __construct() { parent::__construct(); } 
             }',
             'template' => '<div>test</div>',
-            'css' => '.test { display: none; }'
+            'css' => '.test { display: none; }',
         ]);
 
-        require_once $this->testComponentsDir . '/ClearTestComponent/ClearTestComponent.php';
+        require_once $this->testComponentsDir.'/ClearTestComponent/ClearTestComponent.php';
 
-        new \OlegV\Tests\ClearTestComponent();
+        /** @noinspection PhpUndefinedClassInspection */
+        new ClearTestComponent();
 
         $statsBefore = BrickManager::getInstance()->getStats();
         $this->assertGreaterThan(0, $statsBefore['cached_classes']);
@@ -287,15 +275,16 @@ class BrickTest extends TestCase
             'php' => '<?php namespace OlegV\Tests; readonly class ErrorComponent extends \OlegV\Brick { 
                 public function __construct() { parent::__construct(); } 
             }',
-            'template' => '<?php throw new \Exception("Template error"); ?>'
+            'template' => '<?php throw new \Exception("Template error"); ?>',
         ]);
 
-        require_once $this->testComponentsDir . '/ErrorComponent/ErrorComponent.php';
+        require_once $this->testComponentsDir.'/ErrorComponent/ErrorComponent.php';
 
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Ошибка рендеринга компонента');
 
-        $component = new \OlegV\Tests\ErrorComponent();
+        /** @noinspection PhpUndefinedClassInspection */
+        $component = new ErrorComponent();
         $component->render();
     }
 
@@ -305,17 +294,19 @@ class BrickTest extends TestCase
             'php' => '<?php namespace OlegV\Tests; readonly class CachedComponent extends \OlegV\Brick { 
                 public function __construct(public int $id = 0) { parent::__construct(); } 
             }',
-            'template' => '<div id="<?= $this->id ?>">cached</div>'
+            'template' => '<div id="<?= $this->id ?>">cached</div>',
         ]);
 
-        require_once $this->testComponentsDir . '/CachedComponent/CachedComponent.php';
+        require_once $this->testComponentsDir.'/CachedComponent/CachedComponent.php';
 
         // Первый экземпляр
-        $component1 = new \OlegV\Tests\CachedComponent(1);
+        /** @noinspection PhpUndefinedClassInspection */
+        $component1 = new CachedComponent(1);
         $result1 = $component1->render();
 
         // Второй экземпляр
-        $component2 = new \OlegV\Tests\CachedComponent(2);
+        /** @noinspection PhpUndefinedClassInspection */
+        $component2 = new CachedComponent(2);
         $result2 = $component2->render();
 
         $this->assertEquals('<div id="1">cached</div>', $result1);

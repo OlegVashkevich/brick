@@ -9,7 +9,6 @@ namespace OlegV\Assets;
  * $inlineRenderer = new InlineAssetRenderer();
  * $inlineRenderer->setMinify(true);
  * $inlineRenderer->setMode(InlineAssetRenderer::MODE_MULTIPLE);
- *  TODO: тесты и phpstan
  */
 class InlineAssetRenderer extends AbstractAssetRenderer
 {

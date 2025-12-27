@@ -1,19 +1,23 @@
 <?php
+
+declare(strict_types=1);
+
 namespace OlegV\Tests;
 
-use OlegV\Brick;
+
 use OlegV\BrickManager;
-use OlegV\Tests\Components\Button;
-use OlegV\Tests\Components\PrimaryButton;
-use OlegV\Tests\Components\Card;
+use OlegV\Tests\Components\Button\Button;
+use OlegV\Tests\Components\Card\Card;
+use OlegV\Tests\Components\InvalidComponent\InvalidComponent;
+use OlegV\Tests\Components\PrimaryButton\PrimaryButton;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
 // Подключаем реальные компоненты
-require_once __DIR__ . '/Components/Button/Button.php';
-require_once __DIR__ . '/Components/PrimaryButton/PrimaryButton.php';
-require_once __DIR__ . '/Components/Card/Card.php';
-require_once __DIR__ . '/Components/InvalidComponent/InvalidComponent.php';
+require_once __DIR__.'/Components/Button/Button.php';
+require_once __DIR__.'/Components/PrimaryButton/PrimaryButton.php';
+require_once __DIR__.'/Components/Card/Card.php';
+require_once __DIR__.'/Components/InvalidComponent/InvalidComponent.php';
 
 class BrickRealTest extends TestCase
 {
@@ -34,7 +38,7 @@ class BrickRealTest extends TestCase
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('template.php не найден');
 
-        new Components\InvalidComponent();
+        new InvalidComponent();
     }
 
     public function testComponentWithValidTemplate(): void
@@ -82,8 +86,8 @@ class BrickRealTest extends TestCase
 
     public function testCssAndJsAssets(): void
     {
-        // Создаем компонент для регистрации ассетов
-        $button = new Button();
+        // Создаем компонент для регистрации асетов
+        new Button();
 
         $css = BrickManager::getInstance()->renderCss();
         $js = BrickManager::getInstance()->renderJs();
@@ -102,9 +106,9 @@ class BrickRealTest extends TestCase
     public function testMultipleComponentsShareAssets(): void
     {
         // Создаем компоненты
-        $button = new Button();
-        $primaryButton = new PrimaryButton();
-        $card = new Card();
+        new Button();
+        new PrimaryButton();
+        new Card();
 
         $css = BrickManager::getInstance()->renderCss();
         $js = BrickManager::getInstance()->renderJs();
@@ -122,7 +126,7 @@ class BrickRealTest extends TestCase
 
     public function testClearMethod(): void
     {
-        $button = new Button();
+        new Button();
 
         $statsBefore = BrickManager::getInstance()->getStats();
         $this->assertGreaterThan(0, $statsBefore['cached_classes']);
@@ -139,7 +143,7 @@ class BrickRealTest extends TestCase
     {
         // Этот тест сложно реализовать с готовыми компонентами,
         // так как у них есть корректные шаблоны
-        // Оставляем его как пример того, что можно было бы протестировать
+        // оставляем его как пример того, что можно было бы протестировать
         $this->assertTrue(true); // Просто пропускаем тест
     }
 
@@ -199,8 +203,8 @@ class BrickRealTest extends TestCase
 
     public function testCssInheritanceAndOverride(): void
     {
-        $button = new Button();
-        $primaryButton = new PrimaryButton();
+        new Button();
+        new PrimaryButton();
 
         $css = BrickManager::getInstance()->renderCss();
 
@@ -214,7 +218,7 @@ class BrickRealTest extends TestCase
 
     public function testJsInheritance(): void
     {
-        $button = new Button();
+        new Button();
         $js = BrickManager::getInstance()->renderJs();
 
         $this->assertStringContainsString('Button clicked:', $js);
@@ -226,7 +230,7 @@ class BrickRealTest extends TestCase
         $card = new Card(
             'Test Title',
             '<p>Test content with <strong>HTML</strong></p>',
-            'Footer text'
+            'Footer text',
         );
 
         $result = $card->render();
@@ -250,7 +254,7 @@ class BrickRealTest extends TestCase
 
     public function testCardCssAssets(): void
     {
-        $card = new Card();
+        new Card();
         $css = BrickManager::getInstance()->renderCss();
 
         $this->assertStringContainsString('.card {', $css);

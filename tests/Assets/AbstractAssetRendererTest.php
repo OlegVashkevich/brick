@@ -1,6 +1,8 @@
 <?php
 
-namespace Tests\OlegV\Assets;
+declare(strict_types=1);
+
+namespace OlegV\Tests\Assets;
 
 use InvalidArgumentException;
 use OlegV\Assets\AbstractAssetRenderer;

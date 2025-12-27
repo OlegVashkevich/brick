@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace OlegV\Assets;
 
-
 /**
  * @example
  * // 1. FileAssetRenderer
@@ -28,10 +27,10 @@ class FileAssetRenderer extends AbstractAssetRenderer
         string $publicUrl = '/assets/',
         bool $minify = false,
         string $mode = self::MODE_SINGLE,
-        string $filePrefix = 'brick'
+        string $filePrefix = 'brick',
     ) {
-        $this->outputDir = rtrim($outputDir, '/') . '/';
-        $this->publicUrl = rtrim($publicUrl, '/') . '/';
+        $this->outputDir = rtrim($outputDir, '/').'/';
+        $this->publicUrl = rtrim($publicUrl, '/').'/';
         $this->filePrefix = $filePrefix;
         $this->minify = $minify;
         $this->mode = $mode;
@@ -53,11 +52,11 @@ class FileAssetRenderer extends AbstractAssetRenderer
         foreach ($processed as $id => $css) {
             $hash = md5($css);
             $filename = $this->generateFilename($id, $hash, 'css');
-            $filepath = $this->outputDir . $filename;
+            $filepath = $this->outputDir.$filename;
 
             $this->writeFileIfNotExists($filepath, $css);
 
-            $links[] = '<link rel="stylesheet" href="' . $this->publicUrl . $filename . '">';
+            $links[] = '<link rel="stylesheet" href="'.$this->publicUrl.$filename.'">';
         }
 
         return implode("\n", $links);
@@ -75,11 +74,11 @@ class FileAssetRenderer extends AbstractAssetRenderer
         foreach ($processed as $id => $js) {
             $hash = md5($js);
             $filename = $this->generateFilename($id, $hash, 'js');
-            $filepath = $this->outputDir . $filename;
+            $filepath = $this->outputDir.$filename;
 
             $this->writeFileIfNotExists($filepath, $js);
 
-            $scripts[] = '<script src="' . $this->publicUrl . $filename . '"></script>';
+            $scripts[] = '<script src="'.$this->publicUrl.$filename.'"></script>';
         }
 
         return implode("\n", $scripts);
@@ -96,7 +95,7 @@ class FileAssetRenderer extends AbstractAssetRenderer
             $this->filePrefix,
             $mode,
             substr($hash, 0, 8),
-            $extension
+            $extension,
         );
     }
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OlegV\Tests\Assets;
 
 use OlegV\Assets\FileAssetRenderer;
@@ -14,7 +16,7 @@ class FileAssetRendererTest extends TestCase
         parent::setUp();
 
         // Создаем временную директорию для тестов
-        $this->testOutputDir = sys_get_temp_dir() . '/brick-test-' . uniqid();
+        $this->testOutputDir = sys_get_temp_dir().'/brick-test-'.uniqid();
 
         // Убедимся что директории нет
         if (is_dir($this->testOutputDir)) {
@@ -40,7 +42,7 @@ class FileAssetRendererTest extends TestCase
 
         $files = array_diff(scandir($dir), ['.', '..']);
         foreach ($files as $file) {
-            $path = $dir . '/' . $file;
+            $path = $dir.'/'.$file;
             is_dir($path) ? $this->removeDirectory($path) : unlink($path);
         }
         rmdir($dir);
@@ -52,7 +54,7 @@ class FileAssetRendererTest extends TestCase
 
         $cssAssets = [
             'Component1' => '.component1 { color: red; }',
-            'Component2' => '.component2 { background: blue; }'
+            'Component2' => '.component2 { background: blue; }',
         ];
 
         $result = $renderer->renderCss($cssAssets);
@@ -71,7 +73,7 @@ class FileAssetRendererTest extends TestCase
         $this->assertStringContainsString('.css', $result);
 
         // Проверяем содержимое файла
-        $cssFile = $this->testOutputDir . '/' . current($cssFiles);
+        $cssFile = $this->testOutputDir.'/'.current($cssFiles);
         $fileContent = file_get_contents($cssFile);
 
         $this->assertStringContainsString('.component1 { color: red; }', $fileContent);
@@ -84,7 +86,7 @@ class FileAssetRendererTest extends TestCase
 
         $jsAssets = [
             'Component1' => 'console.log("Component1 loaded");',
-            'Component2' => 'console.log("Component2 loaded");'
+            'Component2' => 'console.log("Component2 loaded");',
         ];
 
         $result = $renderer->renderJs($jsAssets);
@@ -99,7 +101,7 @@ class FileAssetRendererTest extends TestCase
         $this->assertStringContainsString('<script src="/assets/', $result);
         $this->assertStringContainsString('.js', $result);
 
-        $jsFile = $this->testOutputDir . '/' . current($jsFiles);
+        $jsFile = $this->testOutputDir.'/'.current($jsFiles);
         $fileContent = file_get_contents($jsFile);
 
         $this->assertStringContainsString('console.log("Component1 loaded");', $fileContent);
@@ -136,7 +138,7 @@ class FileAssetRendererTest extends TestCase
         // Получаем имя созданного файла
         preg_match('/href="\/assets\/([^"]+)"/', $result1, $matches);
         $filename = $matches[1];
-        $filepath = $this->testOutputDir . '/' . $filename;
+        $filepath = $this->testOutputDir.'/'.$filename;
 
         // Запоминаем время модификации
         $mtime1 = filemtime($filepath);
@@ -159,14 +161,14 @@ class FileAssetRendererTest extends TestCase
         $renderer = new FileAssetRenderer($this->testOutputDir, '/assets/', true);
 
         $cssAssets = [
-            'Test' => ".test {\n    color: red;\n    /* Комментарий */\n    background: blue;\n}"
+            'Test' => ".test {\n    color: red;\n    /* Комментарий */\n    background: blue;\n}",
         ];
 
         $result = $renderer->renderCss($cssAssets);
 
         $files = scandir($this->testOutputDir);
         $cssFiles = array_filter($files, fn($file) => str_contains($file, '.css'));
-        $cssFile = $this->testOutputDir . '/' . current($cssFiles);
+        $cssFile = $this->testOutputDir.'/'.current($cssFiles);
         $fileContent = file_get_contents($cssFile);
 
         // Проверяем что CSS минифицирован
@@ -181,14 +183,14 @@ class FileAssetRendererTest extends TestCase
         $renderer = new FileAssetRenderer($this->testOutputDir, '/assets/', true);
 
         $jsAssets = [
-            'Test' => "// Однострочный комментарий\nconsole.log('test');\n/* Многострочный\nкомментарий */\nfunction test() {\n    return true;\n}"
+            'Test' => "// Однострочный комментарий\nconsole.log('test');\n/* Многострочный\nкомментарий */\nfunction test() {\n    return true;\n}",
         ];
 
         $result = $renderer->renderJs($jsAssets);
 
         $files = scandir($this->testOutputDir);
         $jsFiles = array_filter($files, fn($file) => str_contains($file, '.js'));
-        $jsFile = $this->testOutputDir . '/' . current($jsFiles);
+        $jsFile = $this->testOutputDir.'/'.current($jsFiles);
         $fileContent = file_get_contents($jsFile);
 
         // Проверяем что JS минифицирован
@@ -196,7 +198,9 @@ class FileAssetRendererTest extends TestCase
         $this->assertStringNotContainsString('/* Многострочный', $fileContent);
 
         // Минифицированная версия должна быть короче оригинальной
-        $originalLength = strlen("// Однострочный комментарий\nconsole.log('test');\n/* Многострочный\nкомментарий */\nfunction test() {\n    return true;\n}");
+        $originalLength = strlen(
+            "// Однострочный комментарий\nconsole.log('test');\n/* Многострочный\nкомментарий */\nfunction test() {\n    return true;\n}",
+        );
         $this->assertLessThan($originalLength, strlen($fileContent));
     }
 
@@ -220,8 +224,8 @@ class FileAssetRendererTest extends TestCase
         $this->assertNotEquals($matches1[1], $matches2[1]);
 
         // Оба файла должны существовать
-        $this->assertFileExists($this->testOutputDir . '/' . $matches1[1]);
-        $this->assertFileExists($this->testOutputDir . '/' . $matches2[1]);
+        $this->assertFileExists($this->testOutputDir.'/'.$matches1[1]);
+        $this->assertFileExists($this->testOutputDir.'/'.$matches2[1]);
     }
 
     public function testCustomPublicUrl(): void
@@ -236,7 +240,7 @@ class FileAssetRendererTest extends TestCase
 
     public function testOutputDirAutoCreation(): void
     {
-        $nonExistentDir = $this->testOutputDir . '/non/existent/dir';
+        $nonExistentDir = $this->testOutputDir.'/non/existent/dir';
 
         // Директории не должно существовать
         $this->assertDirectoryDoesNotExist($nonExistentDir);

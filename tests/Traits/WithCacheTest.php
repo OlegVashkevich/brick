@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace OlegV\Tests\Traits;
 
 use JsonException;
 use OlegV\BrickManager;
-use OlegV\Tests\Components\CachedButton;
-use OlegV\Tests\Components\CachedButtonTtl;
+use OlegV\Tests\Components\CachedButton\CachedButton;
+use OlegV\Tests\Components\CachedButtonTtl\CachedButtonTtl;
 use PHPUnit\Framework\MockObject\Exception;
 use PHPUnit\Framework\TestCase;
 use Psr\SimpleCache\CacheInterface;
@@ -13,8 +15,9 @@ use Psr\SimpleCache\InvalidArgumentException;
 use ReflectionClass;
 use ReflectionException;
 
-require_once __DIR__ . '/../Components/CachedButton/CachedButton.php';
-require_once __DIR__ . '/../Components/CachedButtonTtl/CachedButtonTtl.php';
+require_once __DIR__.'/../Components/CachedButton/CachedButton.php';
+require_once __DIR__.'/../Components/CachedButtonTtl/CachedButtonTtl.php';
+
 class WithCacheTest extends TestCase
 {
     //private $root;
@@ -44,7 +47,8 @@ class WithCacheTest extends TestCase
         BrickManager::getInstance()->setCache($this->cacheMock);
 
         // Настраиваем мок
-        $this->cacheMock->method('get')
+        $this->cacheMock
+            ->method('get')
             ->willReturn('<button class="btn btn-primary">Cached</button>');
 
         // Создаем компонент
@@ -87,7 +91,8 @@ class WithCacheTest extends TestCase
         BrickManager::getInstance()->setCache($this->cacheMock);
 
         // Настраиваем мок для кэш-промаха
-        $this->cacheMock->expects($this->once())
+        $this->cacheMock
+            ->expects($this->once())
             ->method('get')
             ->willReturn(null); // Кэш-промах
 
@@ -126,7 +131,7 @@ class WithCacheTest extends TestCase
     {
         $button1 = new CachedButton('Button 1', 'primary');
         $button2 = new CachedButton('Button 2', 'secondary');
-        $button3 = new CachedButton('Button 1', 'primary'); // Те же свойства что и button1
+        $button3 = new CachedButton('Button 1', 'primary'); // Те же свойства, что и button1
 
         $reflection = new ReflectionClass($button1);
         $method = $reflection->getMethod('getCacheHash');
@@ -141,6 +146,7 @@ class WithCacheTest extends TestCase
         // Одинаковые свойства - одинаковые хэши
         $this->assertEquals($hash1, $hash3);
     }
+
     /**
      * @throws ReflectionException
      */
@@ -189,23 +195,24 @@ class WithCacheTest extends TestCase
         BrickManager::setCache($this->cacheMock);
 
         // Настраиваем мок для кэш-промаха и проверяем что set вызывается с правильным TTL
-        $this->cacheMock->expects($this->once())
+        $this->cacheMock
+            ->expects($this->once())
             ->method('get')
             ->willReturn(null);
 
-        $this->cacheMock->expects($this->once())
+        $this->cacheMock
+            ->expects($this->once())
             ->method('set')
             ->with(
                 $this->stringContains('CachedButtonTtl'), // ключ
                 $this->stringContains('<button'), // HTML результат рендеринга (второй аргумент!)
-                $this->equalTo(600) // TTL из CachedButtonTtl
+                $this->equalTo(600), // TTL из CachedButtonTtl
             )
             ->willReturn(true);
 
         // Создаем и рендерим компонент
         $button = new CachedButtonTtl('Test Button');
         $button->render();
-
     }
 
     /**
@@ -218,16 +225,18 @@ class WithCacheTest extends TestCase
         BrickManager::setCache($this->cacheMock);
 
         // Настраиваем мок для кэш-промаха
-        $this->cacheMock->expects($this->once())
+        $this->cacheMock
+            ->expects($this->once())
             ->method('get')
             ->willReturn(null);
 
-        $this->cacheMock->expects($this->once())
+        $this->cacheMock
+            ->expects($this->once())
             ->method('set')
             ->with(
                 $this->stringContains('CachedButton'), // ключ
                 $this->stringContains('<button'), // HTML результат рендеринга (второй аргумент!)
-                $this->equalTo(BrickManager::$cacheTtl) // Дефолтный TTL из BrickManager
+                $this->equalTo(BrickManager::$cacheTtl), // Дефолтный TTL из BrickManager
             )
             ->willReturn(true);
 
