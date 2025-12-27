@@ -97,7 +97,7 @@ class WithHelpersTest extends TestCase
             'data-text="Test &quot;quote&quot; and &apos;apos&apos; &amp; ampersand"',
             $result,
         );
-        $this->assertStringContainsString('onclick="alert(&quot;test&quot;)"', $result);
+        $this->assertStringNotContainsString('onclick=', $result);
     }
 
     // ==================== FORMAT TESTS ====================
