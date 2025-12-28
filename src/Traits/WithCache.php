@@ -61,38 +61,36 @@ trait WithCache
      */
     public function render(?int $ttl = null): string
     {
-        $cache = BrickManager::getCache();
-        $finalTtl = $ttl ?? $this->ttl();
-
-        // Если кэш не настроен - обычный рендер
-        if ($cache === null || $finalTtl === 0) {
+        // render может быть уже переопределен родителем с WithCache,
+        // но если текущий класс без него - то кэш нам не нужен
+        // поэтому проверяем, явно ли используется WithCache в текущем классе
+        $currentClassTraits = class_uses($this);
+        if (!in_array(WithCache::class, $currentClassTraits, true)) {
             return $this->renderOriginal();
+        } else {
+            $cache = BrickManager::getCache();
+            $finalTtl = $ttl ?? $this->ttl();
+
+            // Если кэш не настроен - обычный рендер
+            if ($cache === null || $finalTtl === 0) {
+                return $this->renderOriginal();
+            }
+
+            // Генерируем ключ кэша (учитываем TTL в хэше)
+            $cacheKey = BrickManager::$cachePrefix.static::class.'_'.$this->getCacheHash().'_'.$finalTtl;
+
+            // Пробуем получить из кэша
+            $cached = $cache->get($cacheKey);
+            if (is_string($cached)) {
+                return $cached;
+            }
+
+            // Рендерим и сохраняем в кэш
+            $html = $this->renderOriginal();
+            $cache->set($cacheKey, $html, $finalTtl);
+
+            return $html;
         }
-
-        // Генерируем ключ кэша (учитываем TTL в хэше)
-        $cacheKey = BrickManager::$cachePrefix.static::class.'_'.$this->getCacheHash().'_'.$finalTtl;
-
-        // Пробуем получить из кэша
-        $cached = $cache->get($cacheKey);
-        if (is_string($cached)) {
-            return $cached;
-        }
-
-        // Рендерим и сохраняем в кэш
-        $html = $this->renderOriginal();
-        $cache->set($cacheKey, $html, $finalTtl);
-
-        return $html;
-    }
-
-    /**
-     * Вызывает оригинальный метод render
-     */
-    private function renderOriginal(): string
-    {
-        return (function () {
-            return parent::render();
-        })->call($this);
     }
 
     /**

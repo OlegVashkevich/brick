@@ -42,21 +42,29 @@ use RuntimeException;
  */
 trait WithInheritance
 {
-    protected function initializeWithInheritanceComponent(BrickManager $manager): void
+    protected function initialize(BrickManager $manager): void
     {
-        $className = static::class;
+        // Проверяем, явно ли используется WithInheritance в текущем классе
+        // Без проверки class_uses($this) все потомки BaseCard получат WithInheritance,
+        // даже если они не хотели этого.
+        $currentClassTraits = class_uses($this);
+        if (!in_array(WithInheritance::class, $currentClassTraits, true)) {
+            $this->initializeComponent($manager);
+        } else {
+            $className = static::class;
 
-        // ОДИН проход по иерархии
-        $data = $this->findTemplateAndAssets();
+            // ОДИН проход по иерархии
+            $data = $this->findTemplateAndAssets();
 
-        // Регистрируем в менеджере
-        $manager->memoizeComponent(
-            className: $className,
-            dir: $data['dir'],
-            templatePath: $data['templatePath'],
-            css: $data['css'],
-            js: $data['js'],
-        );
+            // Регистрируем в менеджере
+            $manager->memoizeComponent(
+                className: $className,
+                dir: $data['dir'],
+                templatePath: $data['templatePath'],
+                css: $data['css'],
+                js: $data['js'],
+            );
+        }
     }
 
     /**

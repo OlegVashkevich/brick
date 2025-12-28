@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace OlegV;
 
-use OlegV\Traits\WithInheritance;
 use ReflectionClass;
 use RuntimeException;
 use Throwable;
@@ -30,17 +29,18 @@ trait Mold
     public function __construct()
     {
         $manager = BrickManager::getInstance();
-        
-        // Проверяем, явно ли используется WithInheritance в текущем классе
-        // Без проверки class_uses($this) все потомки BaseCard получат WithInheritance,
-        // даже если они не хотели этого.
-        $currentClassTraits = class_uses($this);
-        if (!in_array(WithInheritance::class, $currentClassTraits, true)) {
-            $this->initializeComponent($manager);
-        } else {
-            //используем метод из trait WithInheritance
-            $this->initializeWithInheritanceComponent($manager);
-        }
+        $this->initialize($manager);
+    }
+
+    /**
+     * Метод инициализации который может быть заменен трейтами.
+     * По умолчанию вызывает стандартный метод initializeComponent
+     * @param  BrickManager  $manager
+     * @return void
+     */
+    protected function initialize(BrickManager $manager): void
+    {
+        $this->initializeComponent($manager);
     }
 
     /**
@@ -93,18 +93,16 @@ trait Mold
         );
     }
 
-    /**
-     * Метод инициализации с особыми правилами наследования асетов
-     * Заглушка для WithInheritance
-     * @param  BrickManager  $manager
-     */
-    protected function initializeWithInheritanceComponent(BrickManager $manager): void {}
+    public function render(): string
+    {
+        return $this->renderOriginal();
+    }
 
     /**
      * Рендерит компонент в HTML
      * @return string
      */
-    public function render(): string
+    public function renderOriginal(): string
     {
         ob_start();
         try {
