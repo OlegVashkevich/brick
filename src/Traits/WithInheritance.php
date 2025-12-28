@@ -51,19 +51,8 @@ trait WithInheritance
         if (!in_array(WithInheritance::class, $currentClassTraits, true)) {
             $this->initializeComponent($manager);
         } else {
-            $className = static::class;
-
             // ОДИН проход по иерархии
-            $data = $this->findTemplateAndAssets();
-
-            // Регистрируем в менеджере
-            $manager->memoizeComponent(
-                className: $className,
-                dir: $data['dir'],
-                templatePath: $data['templatePath'],
-                css: $data['css'],
-                js: $data['js'],
-            );
+            $this->findTemplateAndAssets();
         }
     }
 
@@ -81,34 +70,33 @@ trait WithInheritance
      * - CSS: BaseCard/style.css + ProductCard/style.css
      * - JS: BaseCard/script.js + ProductCard/script.js
      *
-     * @return array{
-     *     dir: string,
-     *     templatePath: string,
-     *     css: string,
-     *     js: string
-     * }
      * @throws RuntimeException Если ни один шаблон не найден
      */
-    private function findTemplateAndAssets(): array
+    private function findTemplateAndAssets(): void
     {
         $className = static::class;
         $reflection = new ReflectionClass($className);
         $currentClass = $reflection;
 
-        $cssParts = [];
-        $jsParts = [];
-        $templatePath = '';
+        // 1. Собираем ВСЁ по цепочке
+        $classData = [];
 
-        // Проходим всю цепочку до Brick
         while ($currentClass) {
+            $classKey = $currentClass->getName();
             $dir = dirname((string)$currentClass->getFileName());
 
-            // Ищем template (первый найденный - от самого "старшего" родителя)
-            if ($templatePath === '') {
-                $possibleTemplate = $dir.'/template.php';
-                if (file_exists($possibleTemplate)) {
-                    $templatePath = $possibleTemplate;
-                }
+            // Инициализируем запись для класса
+            $classData[$classKey] = [
+                'dir' => $dir,
+                'templatePath' => null,
+                'css' => '',
+                'js' => '',
+            ];
+
+            // template.php
+            $possibleTemplate = $dir.'/template.php';
+            if (file_exists($possibleTemplate)) {
+                $classData[$classKey]['templatePath'] = $possibleTemplate;
             }
 
             // CSS
@@ -116,7 +104,7 @@ trait WithInheritance
             if (file_exists($cssPath)) {
                 $cssContent = (string)file_get_contents($cssPath);
                 if ($cssContent !== '') {
-                    $cssParts[] = $cssContent;
+                    $classData[$classKey]['css'] = $cssContent;
                 }
             }
 
@@ -125,11 +113,11 @@ trait WithInheritance
             if (file_exists($jsPath)) {
                 $jsContent = (string)file_get_contents($jsPath);
                 if ($jsContent !== '') {
-                    $jsParts[] = $jsContent;
+                    $classData[$classKey]['js'] = $jsContent;
                 }
             }
 
-            // Переходим к родителю, останавливаемся на Brick или Clay
+            // Переходим к родителю
             $parent = $currentClass->getParentClass();
             if ($parent === false || $parent->name === Brick::class || $parent->name === Clay::class) {
                 break;
@@ -138,16 +126,42 @@ trait WithInheritance
             $currentClass = $parent;
         }
 
-        if ($templatePath === '') {
+        // 2. Переворачиваем массив - от родителя к потомку
+        $classData = array_reverse($classData, true);
+
+        // 3. Находим ближайший шаблон (первый не-null templatePath)
+        $templatePath = null;
+        foreach ($classData as $data) {
+            if ($data['templatePath'] !== null) {
+                $templatePath = $data['templatePath'];
+                break; // Берем первый найденный (самого старшего предка)
+            }
+        }
+
+        if ($templatePath === null) {
             throw new RuntimeException("Шаблон не найден в цепочке наследования");
         }
 
-        // CSS/JS уже в порядке от потомка к родителю, нужно развернуть
-        return [
-            'dir' => dirname($templatePath),
-            'templatePath' => $templatePath,
-            'css' => implode("\n\n", array_reverse($cssParts)),
-            'js' => implode("\n\n", array_reverse($jsParts)),
-        ];
+        // 4. Регистрируем ВСЕ классы в цепочке
+        $manager = BrickManager::getInstance();
+
+        foreach ($classData as $class => $data) {
+            // Если у текущего класса нет своего шаблона - используем найденный
+            $currentTemplatePath = $data['templatePath'] ?? $templatePath;
+
+            //уже зарегистрированных пропускаем
+            if ($manager->isComponentMemoized($class)) {
+                continue;
+            }
+
+            // Регистрируем класс в менеджере
+            $manager->memoizeComponent(
+                className: $class,
+                dir: $data['dir'],
+                templatePath: $currentTemplatePath,
+                css: $data['css'],
+                js: $data['js'],
+            );
+        }
     }
 }
