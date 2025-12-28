@@ -146,6 +146,24 @@ final class BrickManager
     }
 
     /**
+     * @return array{cached_classes: int, css_assets: int, js_assets: int}
+     */
+    public function getStats(): array
+    {
+        $result = array_reduce($this->classCache, function ($carry, $item) {
+            return [
+                'css' => $carry['css'] + (int)($item['css'] !== ''),
+                'js' => $carry['js'] + (int)($item['js'] !== ''),
+            ];
+        }, ['css' => 0, 'js' => 0]);
+        return [
+            'cached_classes' => count($this->classCache),
+            'css_assets' => $result['css'],
+            'js_assets' => $result['js'],
+        ];
+    }
+
+    /**
      * @return array<string, array{dir: string, templatePath: string, css: string, js: string}>
      */
     public function getFullInfo(): array
