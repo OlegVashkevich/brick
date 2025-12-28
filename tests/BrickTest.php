@@ -237,36 +237,8 @@ class BrickTest extends TestCase
         $this->assertStringContainsString('.component-a', $css);
         $this->assertStringContainsString('ComponentB', $js);
 
-        $stats = BrickManager::getInstance()->getStats();
-        $this->assertEquals(2, $stats['cached_classes']);
-        $this->assertEquals(1, $stats['css_assets']);
-        $this->assertEquals(1, $stats['js_assets']);
-    }
-
-    public function testClearMethod(): void
-    {
-        $this->createTestComponent('ClearTestComponent', [
-            'php' => '<?php namespace OlegV\Tests; readonly class ClearTestComponent extends \OlegV\Brick { 
-                public function __construct() { parent::__construct(); } 
-            }',
-            'template' => '<div>test</div>',
-            'css' => '.test { display: none; }',
-        ]);
-
-        require_once $this->testComponentsDir.'/ClearTestComponent/ClearTestComponent.php';
-
-        /** @noinspection PhpUndefinedClassInspection */
-        new ClearTestComponent();
-
-        $statsBefore = BrickManager::getInstance()->getStats();
-        $this->assertGreaterThan(0, $statsBefore['cached_classes']);
-
-        BrickManager::getInstance()->clear();
-
-        $statsAfter = BrickManager::getInstance()->getStats();
-        $this->assertEquals(0, $statsAfter['cached_classes']);
-        $this->assertEquals(0, $statsAfter['css_assets']);
-        $this->assertEquals(0, $statsAfter['js_assets']);
+        $stats = count(BrickManager::getInstance()->getFullInfo());
+        $this->assertEquals(2, $stats);
     }
 
     public function testTemplateWithException(): void
@@ -312,8 +284,8 @@ class BrickTest extends TestCase
         $this->assertEquals('<div id="1">cached</div>', $result1);
         $this->assertEquals('<div id="2">cached</div>', $result2);
 
-        $stats = BrickManager::getInstance()->getStats();
-        $this->assertEquals(1, $stats['cached_classes']);
+        $stats = count(BrickManager::getInstance()->getFullInfo());
+        $this->assertEquals(1, $stats);
     }
 
     public function testEmptyAssetsRenderEmptyString(): void

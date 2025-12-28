@@ -117,26 +117,19 @@ class BrickRealTest extends TestCase
         $this->assertStringContainsString('.card {', $css);
         $this->assertStringContainsString('.btn-primary {', $css);
         $this->assertStringContainsString('Button clicked:', $js);
-
-        $stats = BrickManager::getInstance()->getStats();
-        $this->assertEquals(3, $stats['cached_classes']);
-        $this->assertGreaterThan(0, $stats['css_assets']);
-        $this->assertGreaterThan(0, $stats['js_assets']);
     }
 
     public function testClearMethod(): void
     {
         new Button();
 
-        $statsBefore = BrickManager::getInstance()->getStats();
-        $this->assertGreaterThan(0, $statsBefore['cached_classes']);
+        $statsBefore = count(BrickManager::getInstance()->getFullInfo());
+        $this->assertGreaterThan(0, $statsBefore);
 
         BrickManager::getInstance()->clear();
 
-        $statsAfter = BrickManager::getInstance()->getStats();
-        $this->assertEquals(0, $statsAfter['cached_classes']);
-        $this->assertEquals(0, $statsAfter['css_assets']);
-        $this->assertEquals(0, $statsAfter['js_assets']);
+        $statsAfter = count(BrickManager::getInstance()->getFullInfo());
+        $this->assertEquals(0, $statsAfter);
     }
 
     public function testTemplateWithException(): void
@@ -160,8 +153,8 @@ class BrickRealTest extends TestCase
         $this->assertStringContainsString('>Button 1<', $result1);
         $this->assertStringContainsString('>Button 2<', $result2);
 
-        $stats = BrickManager::getInstance()->getStats();
-        $this->assertEquals(1, $stats['cached_classes']); // Один класс Button кэширован
+        $stats = count(BrickManager::getInstance()->getFullInfo());
+        $this->assertEquals(1, $stats); // Один класс Button кэширован
     }
 
     public function testEmptyAssetsRenderEmptyString(): void

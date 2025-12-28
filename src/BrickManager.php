@@ -18,18 +18,6 @@ final class BrickManager
     private static ?self $instance = null;
 
     /**
-     * CSS Асеты всех компонентов
-     * @var array<string, string>
-     */
-    private array $cssAssets = [];
-
-    /**
-     * JS Асеты всех компонентов
-     * @var array<string, string>
-     */
-    private array $jsAssets = [];
-
-    /**
      * Кэш данных компонентов
      * @var array<string, array{dir: string, templatePath: string, css: string, js: string}>
      */
@@ -86,14 +74,6 @@ final class BrickManager
             'css' => $css,
             'js' => $js,
         ];
-
-        if ($css !== '') {
-            $this->cssAssets[$className] = $css;
-        }
-
-        if ($js !== '') {
-            $this->jsAssets[$className] = $js;
-        }
     }
 
     /**
@@ -114,20 +94,32 @@ final class BrickManager
 
     public function renderCss(): string
     {
-        if ($this->cssAssets === []) {
+        $cssAssets = [];
+        foreach ($this->classCache as $className => $data) {
+            if ($data['css'] !== '') {
+                $cssAssets[$className] = $data['css'];
+            }
+        }
+        if ($cssAssets === []) {
             return '';
         }
 
-        return $this->assetRenderer->renderCss($this->cssAssets);
+        return $this->assetRenderer->renderCss($cssAssets);
     }
 
     public function renderJs(): string
     {
-        if ($this->jsAssets === []) {
+        $jsAssets = [];
+        foreach ($this->classCache as $className => $data) {
+            if ($data['js'] !== '') {
+                $jsAssets[$className] = $data['js'];
+            }
+        }
+        if ($jsAssets === []) {
             return '';
         }
 
-        return $this->assetRenderer->renderJs($this->jsAssets);
+        return $this->assetRenderer->renderJs($jsAssets);
     }
 
     public function renderAssets(): string
@@ -150,20 +142,14 @@ final class BrickManager
 
     public function clear(): void
     {
-        $this->cssAssets = [];
-        $this->jsAssets = [];
         $this->classCache = [];
     }
 
     /**
-     * @return array{cached_classes: int, css_assets: int, js_assets: int}
+     * @return array<string, array{dir: string, templatePath: string, css: string, js: string}>
      */
-    public function getStats(): array
+    public function getFullInfo(): array
     {
-        return [
-            'cached_classes' => count($this->classCache),
-            'css_assets' => count($this->cssAssets),
-            'js_assets' => count($this->jsAssets),
-        ];
+        return $this->classCache;
     }
 }
