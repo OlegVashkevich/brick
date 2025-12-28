@@ -18,6 +18,7 @@ use Throwable;
  * Для добавления функциональности в компоненты используйте другие трейты:
  * - WithCache - для кэширования
  * - WithHelpers - для вспомогательных методов
+ * - WithStrictHelpers - для строгих проверок типов для шаблонов
  * - WithInheritance - для наследования шаблонов и асетов
  *
  * @internal
@@ -25,84 +26,79 @@ use Throwable;
 trait Mold
 {
     /**
-     * Автоматически находит и кэширует файлы компонента
+     */
+    public function __construct()
+    {
+        $manager = BrickManager::getInstance();
+        
+        // Проверяем, явно ли используется WithInheritance в текущем классе
+        // Без проверки class_uses($this) все потомки BaseCard получат WithInheritance,
+        // даже если они не хотели этого.
+        $currentClassTraits = class_uses($this);
+        if (!in_array(WithInheritance::class, $currentClassTraits, true)) {
+            $this->initializeComponent($manager);
+        } else {
+            //используем метод из trait WithInheritance
+            $this->initializeWithInheritanceComponent($manager);
+        }
+    }
+
+    /**
+     * Автоматически находит и регистрирует файлы компонента
      *
      * Логика поиска:
      * 1. Ищет файлы в папке компонента
      * 2. Читает template.php (обязателен)
      * 3. Загружает style.css и script.js если существуют в BrickManager
-     * 4. Кэширует все данные в BrickManager
-     *
-     * @throws RuntimeException если template.php не найден
+     * 4. Регистрирует все данные в BrickManager
+     * @param  BrickManager  $manager
      */
-    public function __construct()
+    protected function initializeComponent(BrickManager $manager): void
     {
-        // Проверяем, что текущий класс не использует этот трейт
-        $currentClassTraits = class_uses($this);
-
         $className = static::class;
+        // Проверяем регистр
+        if ($manager->isComponentMemoized($className)) {
+            $cached = $manager->getMemoizedComponent($className);
 
-        $manager = BrickManager::getInstance();
-
-        if (!in_array(WithInheritance::class, $currentClassTraits, true)) {
-            // Проверяем кэш
-            if ($manager->isComponentCached($className)) {
-                $this->useCachedData($className, $manager);
-                return;
+            if ($cached === null) {
+                throw new RuntimeException(
+                    sprintf('Кэшированные данные не найдены для %s', $className),
+                );
             }
-
-            $reflection = new ReflectionClass($className);
-            $dir = dirname((string)$reflection->getFileName());
-            $templatePath = $dir.'/template.php';
-
-            if (!file_exists($templatePath)) {
-                throw new RuntimeException("template.php не найден");
-            }
-
-            $css = file_exists($dir.'/style.css')
-                ? (string)file_get_contents($dir.'/style.css')
-                : '';
-            $js = file_exists($dir.'/script.js')
-                ? (string)file_get_contents($dir.'/script.js')
-                : '';
-
-            // Кэшируем в менеджере
-            $manager->cacheComponent(
-                className: $className,
-                dir: $dir,
-                templatePath: $templatePath,
-                css: $css,
-                js: $js,
-            );
-        } else {
-            //используем метод из trait WithInheritance
-            $this->initializeComponent($manager);
+            return;
         }
+
+        $reflection = new ReflectionClass($className);
+        $dir = dirname((string)$reflection->getFileName());
+        $templatePath = $dir.'/template.php';
+
+        if (!file_exists($templatePath)) {
+            throw new RuntimeException("template.php не найден");
+        }
+
+        $css = file_exists($dir.'/style.css')
+            ? (string)file_get_contents($dir.'/style.css')
+            : '';
+        $js = file_exists($dir.'/script.js')
+            ? (string)file_get_contents($dir.'/script.js')
+            : '';
+
+        // Регистрируем в менеджере
+        $manager->memoizeComponent(
+            className: $className,
+            dir: $dir,
+            templatePath: $templatePath,
+            css: $css,
+            js: $js,
+        );
     }
 
     /**
-     * Метод инициализации, который переопределяют компоненты
+     * Метод инициализации с особыми правилами наследования асетов
      * Заглушка для WithInheritance
      * @param  BrickManager  $manager
      */
-    protected function initializeComponent(BrickManager $manager): void {}
-
-
-    /**
-     * @param  string  $className
-     * @param  BrickManager  $manager
-     * @return void
-     */
-    protected function useCachedData(string $className, BrickManager $manager): void
-    {
-        $cached = $manager->getCachedComponent($className);
-
-        if ($cached === null) {
-            throw new RuntimeException(
-                sprintf('Кэшированные данные не найдены для %s', $className),
-            );
-        }
-    }
+    protected function initializeWithInheritanceComponent(BrickManager $manager): void {}
 
     /**
      * Рендерит компонент в HTML
@@ -114,7 +110,7 @@ trait Mold
         try {
             $className = static::class;
             $manager = BrickManager::getInstance();
-            $cached = $manager->getCachedComponent($className);
+            $cached = $manager->getMemoizedComponent($className);
 
             if (!isset($cached['templatePath'])) {
                 throw new RuntimeException(
@@ -147,8 +143,6 @@ trait Mold
     {
         return $this->render();
     }
-
-    // ==================== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ ДЛЯ ШАБЛОНОВ ====================
 
     /**
      * Экранирование HTML специальных символов

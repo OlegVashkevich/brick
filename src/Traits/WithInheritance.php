@@ -6,20 +6,51 @@ namespace OlegV\Traits;
 
 use OlegV\Brick;
 use OlegV\BrickManager;
+use OlegV\Clay;
 use ReflectionClass;
 use RuntimeException;
 
+/**
+ * Трейт для наследования шаблонов и ресурсов компонентов
+ *
+ * Позволяет создавать иерархию компонентов с наследованием:
+ * - Шаблонов (template.php)
+ * - Стилей (style.css)
+ * - Скриптов (script.js)
+ *
+ * Как работает:
+ * 1. Автоматически ищет файлы по цепочке наследования классов
+ * 2. Шаблон: использует первый найденный
+ * 3. CSS/JS: объединяет все файлы от родителя к потомку
+ * 4. Регистрирует всё в BrickManager через memoizeComponent()
+ *
+ * Пример наследования:
+ * - BaseCard/ содержит template.php, style.css, script.js
+ * - ProductCard/ содержит только style.css, script.js
+ * - Результат: шаблон BaseCard + объединённые CSS/JS
+ *
+ * @example
+ * // Создание иерархии компонентов
+ * class BaseCard extends Brick {
+ *     // Базовый шаблон и стили
+ * }
+ *
+ * class ProductCard extends BaseCard {
+ *      use WithInheritance;
+ *     // Наследует шаблон BaseCard, добавляет свои стили
+ * }
+ */
 trait WithInheritance
 {
-    protected function initializeComponent(BrickManager $manager): void
+    protected function initializeWithInheritanceComponent(BrickManager $manager): void
     {
         $className = static::class;
 
         // ОДИН проход по иерархии
         $data = $this->findTemplateAndAssets();
 
-        // Кэшируем в менеджере
-        $manager->cacheComponent(
+        // Регистрируем в менеджере
+        $manager->memoizeComponent(
             className: $className,
             dir: $data['dir'],
             templatePath: $data['templatePath'],
@@ -29,9 +60,26 @@ trait WithInheritance
     }
 
     /**
-     * Кэш всех данных компонента (статический, на уровне класса)
+     * Находит все файлы (шаблон, CSS, JS) по цепочке наследования компонента
      *
-     * @return array{dir: string, templatePath: string, css: string, js: string}
+     * Алгоритм поиска:
+     * 1. Поднимается по иерархии классов от текущего до Brick/Clay
+     * 2. Шаблон (template.php): берёт первый найденный
+     * 3. CSS/JS (style.css, script.js): собирает ВСЕ файлы по цепочке
+     * 4. Порядок CSS/JS: от родителя к потомку (через array_reverse)
+     *
+     * Пример для иерархии: ProductCard → BaseCard → Brick
+     * - Шаблон: BaseCard/template.php (если ProductCard не имеет своего)
+     * - CSS: BaseCard/style.css + ProductCard/style.css
+     * - JS: BaseCard/script.js + ProductCard/script.js
+     *
+     * @return array{
+     *     dir: string,
+     *     templatePath: string,
+     *     css: string,
+     *     js: string
+     * }
+     * @throws RuntimeException Если ни один шаблон не найден
      */
     private function findTemplateAndAssets(): array
     {
@@ -73,9 +121,9 @@ trait WithInheritance
                 }
             }
 
-            // Переходим к родителю, останавливаемся на Brick
+            // Переходим к родителю, останавливаемся на Brick или Clay
             $parent = $currentClass->getParentClass();
-            if ($parent === false || $parent->name === Brick::class) {
+            if ($parent === false || $parent->name === Brick::class || $parent->name === Clay::class) {
                 break;
             }
 

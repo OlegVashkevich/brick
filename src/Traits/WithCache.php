@@ -65,7 +65,7 @@ trait WithCache
         $finalTtl = $ttl ?? $this->ttl();
 
         // Если кэш не настроен - обычный рендер
-        if ($cache === null || $finalTtl == 0) {
+        if ($cache === null || $finalTtl === 0) {
             return $this->renderOriginal();
         }
 

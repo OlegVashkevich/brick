@@ -35,6 +35,10 @@ final class BrickManager
      */
     private array $classCache = [];
 
+    /**
+     * PSR-16 кэш для рендера, если используется trait WithCache
+     * @var CacheInterface|null
+     */
     private static ?CacheInterface $cache = null;
     public static string $cachePrefix = 'brick_';
     public static int $cacheTtl = 3600;
@@ -69,7 +73,7 @@ final class BrickManager
 
     // ==================== Регистрация компонентов ====================
 
-    public function cacheComponent(
+    public function memoizeComponent(
         string $className,
         string $dir,
         string $templatePath,
@@ -96,12 +100,12 @@ final class BrickManager
      * @param  string  $className
      * @return array{dir: string, templatePath: string, css: string, js: string}|null
      */
-    public function getCachedComponent(string $className): ?array
+    public function getMemoizedComponent(string $className): ?array
     {
         return $this->classCache[$className] ?? null;
     }
 
-    public function isComponentCached(string $className): bool
+    public function isComponentMemoized(string $className): bool
     {
         return isset($this->classCache[$className]);
     }
