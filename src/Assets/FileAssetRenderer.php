@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace OlegV\Assets;
 
+use InvalidArgumentException;
+use RuntimeException;
+
 /**
  * @example
  * // 1. FileAssetRenderer
@@ -26,12 +29,11 @@ class FileAssetRenderer extends AbstractAssetRenderer
      * Файловый рендерер ассетов
      *
      * Генерирует CSS и JS файлы на диск и возвращает HTML теги для их подключения
-     *
-     * @param  string  $outputDir  Директория для сохранения файлов
-     * @param  string  $publicUrl  Публичный URL к директории ассетов
-     * @param  bool  $minify  Включить минификацию
-     * @param  string  $mode  Режим объединения (MODE_SINGLE или MODE_MULTIPLE)
-     * @param  string  $filePrefix  Префикс для имен файлов
+     * @param  string  $outputDir
+     * @param  string  $publicUrl
+     * @param  bool  $minify
+     * @param  string  $mode
+     * @param  string  $filePrefix
      */
     public function __construct(
         string $outputDir,
@@ -40,6 +42,10 @@ class FileAssetRenderer extends AbstractAssetRenderer
         string $mode = self::MODE_SINGLE,
         string $filePrefix = 'brick',
     ) {
+        if (empty($outputDir)) {
+            throw new InvalidArgumentException('outputDir cannot be empty');
+        }
+
         $this->outputDir = rtrim($outputDir, '/').'/';
         $this->publicUrl = rtrim($publicUrl, '/').'/';
         $this->filePrefix = $filePrefix;
@@ -47,7 +53,9 @@ class FileAssetRenderer extends AbstractAssetRenderer
         $this->mode = $mode;
 
         if (!is_dir($this->outputDir)) {
-            mkdir($this->outputDir, 0755, true);
+            if (!mkdir($this->outputDir, 0755, true)) {
+                throw new RuntimeException("Failed to create directory: {$this->outputDir}");
+            }
         }
     }
 

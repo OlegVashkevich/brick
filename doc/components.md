@@ -129,8 +129,6 @@ $posts = $user->getRecentPosts(10);
 ```
 
 ### Доступные методы в шаблонах
-
-Из `Mold` трейта:
 - `$this->e(?string $value): string` — экранирование HTML
 
 Из трейта `WithHelpers` (если используется):
@@ -157,7 +155,6 @@ $posts = $user->getRecentPosts(10);
 
 ### JavaScript (`script.js`)
 - Загружаются автоматически при существовании файла
-- Изолированы в своей области видимости
 
 ```javascript
 // script.js
