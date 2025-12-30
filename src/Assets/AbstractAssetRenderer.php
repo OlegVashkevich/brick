@@ -10,8 +10,16 @@ abstract class AbstractAssetRenderer implements AssetRenderer
 {
     public const MODE_SINGLE = 'single';
     public const MODE_MULTIPLE = 'multiple';
-
+    /**
+     * Включена ли минификация
+     */
     protected bool $minify = false;
+
+    /**
+     * Режим объединения ассетов
+     * @see self::MODE_SINGLE
+     * @see self::MODE_MULTIPLE
+     */
     protected string $mode = self::MODE_SINGLE;
 
     /**
@@ -129,6 +137,8 @@ abstract class AbstractAssetRenderer implements AssetRenderer
 
     /**
      * Установить режим объединения
+     * @param  string  $mode  Режим: MODE_SINGLE или MODE_MULTIPLE
+     * @throws InvalidArgumentException Если передан неизвестный режим
      */
     public function setMode(string $mode): void
     {

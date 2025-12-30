@@ -28,7 +28,13 @@ final class BrickManager
      * @var CacheInterface|null
      */
     private static ?CacheInterface $cache = null;
+    /**
+     * Префикс для ключей кэша
+     */
     public static string $cachePrefix = 'brick_';
+    /**
+     * Время жизни кэша по умолчанию (в секундах)
+     */
     public static int $cacheTtl = 3600;
 
     public function __construct(
@@ -61,6 +67,14 @@ final class BrickManager
 
     // ==================== Регистрация компонентов ====================
 
+    /**
+     * Регистрирует компонент в кэше менеджера
+     * @param  string  $className  Полное имя класса компонента
+     * @param  string  $dir  Директория компонента
+     * @param  string  $templatePath  Путь к шаблону
+     * @param  string  $css  Содержимое CSS файла
+     * @param  string  $js  Содержимое JS файла
+     */
     public function memoizeComponent(
         string $className,
         string $dir,
@@ -140,6 +154,9 @@ final class BrickManager
 
     // ==================== Утилиты ====================
 
+    /**
+     * Очищает кэш зарегистрированных компонентов
+     */
     public function clear(): void
     {
         $this->classCache = [];

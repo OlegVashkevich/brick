@@ -25,6 +25,8 @@ use Throwable;
 trait Mold
 {
     /**
+     * Автоматически инициализирует компонент
+     * через BrickManager.
      */
     public function __construct()
     {
@@ -92,7 +94,12 @@ trait Mold
             js: $js,
         );
     }
-
+    
+    /**
+     * Рендерит компонент. Может быть переопределен трейтами
+     * (например, WithCache добавляет кэширование)
+     * @return string HTML результат
+     */
     public function render(): string
     {
         return $this->renderOriginal();

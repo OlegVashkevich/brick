@@ -22,6 +22,17 @@ class FileAssetRenderer extends AbstractAssetRenderer
     private string $publicUrl;
     private string $filePrefix;
 
+    /**
+     * Файловый рендерер ассетов
+     *
+     * Генерирует CSS и JS файлы на диск и возвращает HTML теги для их подключения
+     *
+     * @param  string  $outputDir  Директория для сохранения файлов
+     * @param  string  $publicUrl  Публичный URL к директории ассетов
+     * @param  bool  $minify  Включить минификацию
+     * @param  string  $mode  Режим объединения (MODE_SINGLE или MODE_MULTIPLE)
+     * @param  string  $filePrefix  Префикс для имен файлов
+     */
     public function __construct(
         string $outputDir,
         string $publicUrl = '/assets/',

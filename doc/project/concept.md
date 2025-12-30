@@ -16,7 +16,7 @@
 - **Тестирование:** Стремление к 100% покрытию, юнит-тесты
 - **CI/CD:** GitHub Actions для тестов и PHPStan
 - **Версионирование:** SemVer через git tags
-- **Документация:** README.md + docs/ + примеры
+- **Документация:** README.md + docs/
 - **Code quality:** PSR-12, PHP-CS-Fixer, PHPStan level MAX
 - **Минимализм:** KISS принцип, никакого оверинжиниринга
 
@@ -132,7 +132,7 @@ Inline или File рендеринг
 
 ### Базовый компонент (без WithInheritance)
 ```php
-class Button extends Brick {
+readonly class Button extends Brick {
     public function __construct(
         public string $text,
         public string $variant = 'primary'
@@ -145,7 +145,7 @@ class Button extends Brick {
 
 ### Компонент с наследованием
 ```php
-class ProductCard extends BaseCard {
+readonly class ProductCard extends BaseCard {
     use \OlegV\Traits\WithInheritance;
     // Использует BaseCard/template.php если своего нет
     // Добавляет ProductCard/style.css и script.js
@@ -159,7 +159,7 @@ use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 BrickManager::setCache(new FilesystemAdapter());
 BrickManager::$cacheTtl = 3600;
 
-class Article extends Brick {
+readonly class Article extends Brick {
     use \OlegV\Traits\WithCache;
     
     public function __construct(
