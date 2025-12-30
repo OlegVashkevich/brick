@@ -84,17 +84,6 @@ require_once 'vendor/autoload.php';
 echo new HelloWorld('World');
 echo \OlegV\BrickManager::getInstance()->renderAssets();
 ```
-
-## Архитектура
-
-```mermaid
-graph TD
-    A[Ваше приложение] --> B[Компоненты Brick/Clay]
-    B --> C[Трейты]
-    C --> D[BrickManager]
-    D --> E[AssetRenderer]
-    E --> F[HTML/CSS/JS]
-```
 ---
 
 **Brick** — это современный подход к созданию UI на PHP: предсказуемые, типизированные, иммутабельные компоненты с полной поддержкой статического анализа. Начните создавать интерфейсы как код уже сегодня!
