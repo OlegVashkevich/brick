@@ -44,4 +44,4 @@ jobs:
           dependency-versions: "lowest"
 
       - name: "Run PHPStan"
-        run: "./vendor/bin/phpstan --error-format=github analyse -c phpstan.neon"
+        run: "composer run stan"

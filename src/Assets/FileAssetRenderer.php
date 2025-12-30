@@ -42,7 +42,7 @@ class FileAssetRenderer extends AbstractAssetRenderer
         string $mode = self::MODE_SINGLE,
         string $filePrefix = 'brick',
     ) {
-        if (empty($outputDir)) {
+        if ($outputDir === '') {
             throw new InvalidArgumentException('outputDir cannot be empty');
         }
 

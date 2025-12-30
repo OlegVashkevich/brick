@@ -32,6 +32,6 @@
     "scripts": {
         "test": "phpunit",
         "test-coverage": "phpunit --coverage-html coverage",
-        "stan": "./vendor/bin/phpstan analyse -c phpstan.neon"
+        "stan": "./vendor/bin/phpstan analyse --memory-limit 256M -c phpstan.neon"
     }
 }
