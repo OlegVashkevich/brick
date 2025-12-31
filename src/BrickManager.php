@@ -187,4 +187,39 @@ final class BrickManager
     {
         return $this->classCache;
     }
+    
+    // ==================== Режим отладки ====================
+
+    /**
+     * Режим отладки
+     */
+    private static bool $isDebug = false;
+
+    // ... существующие методы ...
+
+    /**
+     * Включить режим отладки
+     */
+    public static function enableDebug(): void
+    {
+        self::$isDebug = true;
+    }
+
+    /**
+     * Выключить режим отладки
+     */
+    public static function disableDebug(): void
+    {
+        self::$isDebug = false;
+    }
+
+    /**
+     * Проверить режим отладки
+     */
+    public static function isDebug(): bool
+    {
+        return self::$isDebug
+            || ($_ENV['APP_ENV'] ?? '') === 'development'
+            || ($_ENV['APP_DEBUG'] ?? '') === 'true';
+    }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OlegV\Tests;
 
 use OlegV\BrickManager;
+use OlegV\Exceptions\RenderException;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -252,12 +253,14 @@ class BrickTest extends TestCase
 
         require_once $this->testComponentsDir.'/ErrorComponent/ErrorComponent.php';
 
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('Ошибка рендеринга компонента');
+        $this->expectException(RenderException::class);
+        $this->expectExceptionMessage(
+            'Ошибка рендеринга компонента OlegV\Tests\ErrorComponent: Template error',
+        );
 
         /** @noinspection PhpUndefinedClassInspection */
         $component = new ErrorComponent();
-        $component->render();
+        $component->renderOriginal();
     }
 
     public function testCacheReuse(): void

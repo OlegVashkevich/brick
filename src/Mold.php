@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace OlegV;
 
+use OlegV\Exceptions\ComponentNotFoundException;
+use OlegV\Exceptions\RenderException;
 use ReflectionClass;
 use RuntimeException;
 use Throwable;
@@ -75,7 +77,9 @@ trait Mold
         $templatePath = $dir.'/template.php';
 
         if (!file_exists($templatePath)) {
-            throw new RuntimeException("template.php не найден");
+            throw new ComponentNotFoundException(
+                sprintf('template.php не найден для %s', $className),
+            );
         }
 
         $css = file_exists($dir.'/style.css')
@@ -94,7 +98,7 @@ trait Mold
             js: $js,
         );
     }
-    
+
     /**
      * Рендерит компонент. Может быть переопределен трейтами
      * (например, WithCache добавляет кэширование)
@@ -102,7 +106,11 @@ trait Mold
      */
     public function render(): string
     {
-        return $this->renderOriginal();
+        try {
+            return $this->renderOriginal();
+        } catch (RenderException|ComponentNotFoundException $e) {
+            return $e->toHtml();
+        }
     }
 
     /**
@@ -118,15 +126,18 @@ trait Mold
             $cached = $manager->getMemoizedComponent($className);
 
             if (!isset($cached['templatePath'])) {
-                throw new RuntimeException(
+                throw new ComponentNotFoundException(
                     sprintf('Не найден путь к шаблону для компонента %s', $className),
                 );
             }
 
             include $cached['templatePath'];
+        } catch (ComponentNotFoundException $e) {
+            ob_end_clean();
+            throw $e;
         } catch (Throwable $e) {
             ob_end_clean();
-            throw new RuntimeException(
+            throw new RenderException(
                 sprintf(
                     'Ошибка рендеринга компонента %s: %s',
                     static::class,
