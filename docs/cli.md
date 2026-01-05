@@ -5,7 +5,7 @@
 ## Использование
 
 ```bash
-./vendor/bin/brick 'Vendor\Namespace\ComponentName'
+./vendor/bin/brick 'PSR4Namespace'
 ```
 
 ### Примеры
@@ -56,7 +56,7 @@ src/My/Components/Button/
 <?php
 declare(strict_types=1);
 
-namespace My\Components;
+namespace My\Components\Button;
 
 use OlegV\Brick;
 
@@ -69,6 +69,17 @@ readonly class Button extends Brick
         parent::__construct();
     }
 }
+```
+## Пример созданного template.php
+```php
+<?php
+declare(strict_types=1);
+namespace My\Components\Button;
+/** @var Button $this */
+?>
+<button class="btn btn-<?=$this->e($this->variant)?>">
+    <?=$this->e($this->text)?>
+</button>
 ```
 
 ## После создания

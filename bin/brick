@@ -7,7 +7,7 @@ declare(strict_types=1);
  * Утилита для создания скелета компонента Brick UI
  *
  * Использование:
- *   ./vendor/bin/brick 'Vendor\Namespace\ComponentName'
+ *   ./vendor/bin/brick 'PSR4Namespace'
  *
  * Пример:
  *   ./vendor/bin/brick 'My\Components\Button'
@@ -281,7 +281,7 @@ echo "==========================\n\n";
 
 if ($argc < 2) {
     echo "Использование:\n";
-    echo "  ./vendor/bin/".basename(__FILE__)." 'Vendor\\Namespace\\ComponentName'\n\n";
+    echo "  ./vendor/bin/".basename(__FILE__)." 'PSR4Namespace'\n\n";
     echo "Примеры:\n";
     echo "  ./vendor/bin/".basename(__FILE__)." 'My\\Components\\Button'\n";
     echo "  ./vendor/bin/".basename(__FILE__)." 'App\\UI\\Forms\\LoginForm'\n";
