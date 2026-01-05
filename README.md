@@ -46,11 +46,11 @@
 
 | Раздел | Описание |
 |--------|----------|
-| [Начало работы](doc/getting-started.md) | Установка и создание первого компонента |
-| [Компоненты](doc/components.md) | Brick, Clay, жизненный цикл, шаблоны |
-| [Трейты](doc/traits.md) | WithCache, WithHelpers, WithStrictHelpers, WithInheritance |
-| [Ассеты](doc/assets.md) | CSS/JS, AssetRenderer, создание своих рендереров |
-| [Продвинутые сценарии](doc/advanced.md) | Оптимизация, интеграция, тестирование, безопасность |
+| [Начало работы](docs/getting-started.md) | Установка и создание первого компонента |
+| [Компоненты](docs/components.md) | Brick, Clay, жизненный цикл, шаблоны |
+| [Трейты](docs/traits.md) | WithCache, WithHelpers, WithStrictHelpers, WithInheritance |
+| [Ассеты](docs/assets.md) | CSS/JS, AssetRenderer, создание своих рендереров |
+| [Продвинутые сценарии](docs/advanced.md) | Оптимизация, интеграция, тестирование, безопасность |
 
 ## Быстрый старт
 
