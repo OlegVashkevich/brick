@@ -1,0 +1,305 @@
+#!/usr/bin/env php
+<?php
+declare(strict_types=1);
+
+/**
+ * Brick Component Creator
+ * Утилита для создания скелета компонента Brick UI
+ *
+ * Использование:
+ *   php create-component.php 'Vendor\Namespace\ComponentName'
+ *
+ * Пример:
+ *   php create-component.php 'OlegV\Components\Button'
+ *   php create-component.php 'App\UI\Forms\LoginForm'
+ */
+class ComponentCreator
+{
+    private array $psr4Mappings = [];
+
+    /**
+     * @throws Exception
+     */
+    public function __construct()
+    {
+        $this->loadComposerConfig();
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function loadComposerConfig(): void
+    {
+        $composerPath = getcwd().'/composer.json';
+
+        if (!file_exists($composerPath)) {
+            throw new Exception("Файл composer.json не найден в текущей директории");
+        }
+
+        $composerJson = file_get_contents($composerPath);
+        $config = json_decode($composerJson, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new Exception("Ошибка чтения composer.json: ".json_last_error_msg());
+        }
+
+        // Загружаем PSR-4 маппинги
+        $this->psr4Mappings = $config['autoload']['psr-4'] ?? [];
+
+        if (empty($this->psr4Mappings)) {
+            throw new Exception("В composer.json не найден psr-4 автозагрузчик");
+        }
+
+        echo "📦 Загружены PSR-4 маппинги:\n";
+        foreach ($this->psr4Mappings as $namespace => $path) {
+            echo "  $namespace => $path\n";
+        }
+        echo "\n";
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function resolveNamespaceToPath(string $namespace): string
+    {
+        $namespace = trim($namespace, '\\').'\\';
+
+        foreach ($this->psr4Mappings as $nsPrefix => $relativePath) {
+            $nsPrefix = trim($nsPrefix, '\\').'\\';
+
+            if (str_starts_with($namespace, $nsPrefix)) {
+                // Нашли подходящий префикс
+                $relativeClass = substr($namespace, strlen($nsPrefix));
+                $relativeClass = trim($relativeClass, '\\');
+
+                // Преобразуем путь
+                $path = rtrim($relativePath, '/');
+                if ($relativeClass !== '') {
+                    $path .= '/'.str_replace('\\', '/', $relativeClass);
+                }
+
+                return getcwd().'/'.$path;
+            }
+        }
+
+        throw new Exception(
+            "Не найдено PSR-4 соответствие для namespace: $namespace\n".
+            "Добавьте в composer.json:\n".
+            "\"autoload\": {\n".
+            "    \"psr-4\": {\n".
+            "        \"".trim($namespace, '\\')."\\\\\": \"src/\"\n".
+            "    }\n".
+            "}",
+        );
+    }
+
+    public function run(string $fullClassName): void
+    {
+        echo "🚀 Создание компонента: $fullClassName\n";
+
+        try {
+            // Парсинг полного имени класса
+            $parsed = $this->parseClassName($fullClassName);
+            $namespace = $parsed['namespace'];
+            $componentName = $parsed['className'];
+
+            echo "📁 Пространство имен: $namespace\n";
+            echo "🧱 Компонент: $componentName\n";
+
+            // Определяем путь на основе PSR-4
+            $baseDir = $this->resolveNamespaceToPath($namespace);
+            echo "📂 Базовый путь: $baseDir\n";
+
+            // Создание структуры директорий
+            $componentDir = $this->createDirectoryStructure($baseDir, $componentName);
+
+            // Создание файлов компонента
+            $this->createClassFile($componentDir, $namespace, $componentName);
+            $this->createTemplateFile($componentDir, $namespace, $componentName);
+            $this->createStyleFile($componentDir, $componentName);
+            $this->createScriptFile($componentDir, $componentName);
+
+            echo "\n✅ Компонент успешно создан!\n";
+            echo "📁 Директория: $componentDir\n";
+
+            $this->showUsageExample($namespace, $componentName);
+        } catch (Exception $e) {
+            echo "❌ Ошибка: ".$e->getMessage()."\n";
+            exit(1);
+        }
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function parseClassName(string $fullClassName): array
+    {
+        // Проверяем валидность имени класса
+        if (!preg_match('/^[a-zA-Z_\x80-\xff][a-zA-Z0-9_\x80-\xff\\\\]*[a-zA-Z0-9_\x80-\xff]$/', $fullClassName)) {
+            throw new Exception("Некорректное имя класса: $fullClassName");
+        }
+
+        $parts = explode('\\', $fullClassName);
+
+        if (count($parts) < 2) {
+            throw new Exception("Укажите полное имя класса с пространством имен (например: Vendor\Component\Button)");
+        }
+
+        $className = array_pop($parts);
+
+        // Проверяем, что имя класса соответствует PSR
+        if (!preg_match('/^[A-Z][a-zA-Z0-9]*$/', $className)) {
+            throw new Exception("Имя класса должно начинаться с заглавной буквы и содержать только буквы и цифры");
+        }
+        return [
+            'namespace' => implode('\\', $parts),
+            'className' => $className,
+        ];
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function createDirectoryStructure(string $baseDir, string $componentName): string
+    {
+        $componentDir = $baseDir.'/'.$componentName;
+
+        echo "📂 Создание директории: $componentDir\n";
+
+        // Создаем директорию компонента
+        if (!is_dir($componentDir)) {
+            if (!mkdir($componentDir, 0755, true)) {
+                throw new Exception("Не удалось создать директорию: $componentDir");
+            }
+        } elseif (count(scandir($componentDir)) > 2) {
+            // Директория не пуста
+            throw new Exception("Директория $componentDir уже существует и не пуста");
+        }
+
+        return $componentDir;
+    }
+
+    private function createClassFile(string $componentDir, string $namespace, string $componentName): void
+    {
+        $filePath = $componentDir.'/'.$componentName.'.php';
+
+        $content = <<<PHP
+            <?php
+            declare(strict_types=1);
+            
+            namespace $namespace;
+            
+            use OlegV\Brick;
+            
+            /**
+             * Компонент $componentName
+             *
+             * @package $namespace
+             */
+            readonly class $componentName extends Brick
+            {
+                public function __construct(
+                    public string \$text,
+                    public string \$variant = 'primary'
+                ) {
+                    parent::__construct();
+                }
+            }
+            PHP;
+
+        file_put_contents($filePath, $content);
+        echo "📄 Создан: $componentName.php\n";
+    }
+
+    private function createTemplateFile(string $componentDir, string $namespace, string $componentName): void
+    {
+        $filePath = $componentDir.'/template.php';
+
+        $content = <<<HTML
+            <?php
+            declare(strict_types=1);
+            namespace $namespace;
+            /** @var $componentName \$this */
+            ?>
+            <button class="btn btn-<?=\$this->e(\$this->variant)?>">
+                <?=\$this->e(\$this->text)?>
+            </button>
+            HTML;
+
+        file_put_contents($filePath, $content);
+        echo "📄 Создан: template.php\n";
+    }
+
+    private function createStyleFile(string $componentDir, string $componentName): void
+    {
+        $filePath = $componentDir.'/style.css';
+
+        $content = <<<CSS
+            /* Стили компонента $componentName */
+            CSS;
+
+        file_put_contents($filePath, $content);
+        echo "📄 Создан: style.css\n";
+    }
+
+    private function createScriptFile(string $componentDir, string $componentName): void
+    {
+        $filePath = $componentDir.'/script.js';
+
+        $content = <<<JS
+            // JavaScript компонента $componentName
+            JS;
+
+        file_put_contents($filePath, $content);
+        echo "📄 Создан: script.js\n";
+    }
+
+    private function showUsageExample(string $namespace, string $componentName): void
+    {
+        $fullClassName = $namespace.'\\'.$componentName;
+
+        echo "\n📋 Использование:\n";
+        echo "// В вашем коде\n";
+        echo "use $fullClassName;\n";
+        echo "echo new $componentName('Текст', 'primary');\n";
+
+        echo "\n⚡ Не забудьте обновить автозагрузку:\n";
+        echo "composer dump-autoload\n";
+    }
+}
+
+// ===== CLI обработка =====
+
+if (PHP_SAPI !== 'cli') {
+    die("🚫 Эта утилита предназначена только для CLI использования.\n");
+}
+
+echo "🧱 Brick Component Creator\n";
+echo "==========================\n\n";
+
+if ($argc < 2) {
+    echo "Использование:\n";
+    echo "  php ".basename(__FILE__)." 'Vendor\\Namespace\\ComponentName'\n\n";
+    echo "Примеры:\n";
+    echo "  php ".basename(__FILE__)." 'OlegV\\Components\\Button'\n";
+    echo "  php ".basename(__FILE__)." 'App\\UI\\Forms\\LoginForm'\n";
+    echo "  php ".basename(__FILE__)." 'Company\\Project\\Cards\\ProductCard'\n\n";
+    echo "Важно:\n";
+    echo "  • Composer.json должен содержать PSR-4 автозагрузку\n";
+    echo "  • Имя класса должно соответствовать PSR-стандартам\n";
+    exit(1);
+}
+
+$fullClassName = $argv[1];
+
+// Убираем возможные кавычки
+$fullClassName = trim($fullClassName, "'\"");
+
+// Запуск создателя компонентов
+try {
+    $creator = new ComponentCreator();
+    $creator->run($fullClassName);
+} catch (Exception $e) {
+    echo "❌ Ошибка: ".$e->getMessage()."\n";
+    exit(1);
+}

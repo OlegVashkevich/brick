@@ -63,7 +63,11 @@ composer require olegv/brick
 ### Минимальный пример
 
 ```php
+<?php
 // HelloWorld/HelloWorld.php
+declare(strict_types=1);
+namespace PSR4Path\HelloWorld;
+
 readonly class HelloWorld extends \OlegV\Brick
 {
     public function __construct(public string $name) {
@@ -73,6 +77,11 @@ readonly class HelloWorld extends \OlegV\Brick
 ```
 
 ```php
+<?php
+declare(strict_types=1);
+use PSR4Path\HelloWorld\HelloWorld;
+/** @var HelloWorld $this */
+?>
 <!-- HelloWorld/template.php -->
 <h1>Hello, <?= $this->e($this->name) ?>!</h1>
 ```
