@@ -74,7 +74,7 @@ readonly class Button extends Brick
 ```php
 <?php
 declare(strict_types=1);
-namespace My\Components\Button;
+use My\Components\Button\Button;
 /** @var Button $this */
 ?>
 <button class="btn btn-<?=$this->e($this->variant)?>">
@@ -93,7 +93,7 @@ composer dump-autoload
 ## Использование в коде
 
 ```php
-use My\Components\Button;
+use My\Components\Button\Button;
 echo new Button('Нажми меня', 'primary');
 ```
 

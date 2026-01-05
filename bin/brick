@@ -216,11 +216,11 @@ class ComponentCreator
     private function createTemplateFile(string $componentDir, string $namespace, string $componentName): void
     {
         $filePath = $componentDir.'/template.php';
-
+        $fullClassName = $namespace.'\\'.$componentName;
         $content = <<<HTML
             <?php
             declare(strict_types=1);
-            namespace $namespace;
+            use  $fullClassName;
             /** @var $componentName \$this */
             ?>
             <button class="btn btn-<?=\$this->e(\$this->variant)?>">
