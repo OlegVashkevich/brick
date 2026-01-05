@@ -7,11 +7,11 @@ declare(strict_types=1);
  * Утилита для создания скелета компонента Brick UI
  *
  * Использование:
- *   php create-component.php 'Vendor\Namespace\ComponentName'
+ *   ./vendor/bin/brick 'Vendor\Namespace\ComponentName'
  *
  * Пример:
- *   php create-component.php 'OlegV\Components\Button'
- *   php create-component.php 'App\UI\Forms\LoginForm'
+ *   ./vendor/bin/brick 'My\Components\Button'
+ *   ./vendor/bin/brick 'App\UI\Forms\LoginForm'
  */
 class ComponentCreator
 {
@@ -279,11 +279,11 @@ echo "==========================\n\n";
 
 if ($argc < 2) {
     echo "Использование:\n";
-    echo "  php ".basename(__FILE__)." 'Vendor\\Namespace\\ComponentName'\n\n";
+    echo "  ./vendor/bin/".basename(__FILE__)." 'Vendor\\Namespace\\ComponentName'\n\n";
     echo "Примеры:\n";
-    echo "  php ".basename(__FILE__)." 'OlegV\\Components\\Button'\n";
-    echo "  php ".basename(__FILE__)." 'App\\UI\\Forms\\LoginForm'\n";
-    echo "  php ".basename(__FILE__)." 'Company\\Project\\Cards\\ProductCard'\n\n";
+    echo "  ./vendor/bin/".basename(__FILE__)." 'My\\Components\\Button'\n";
+    echo "  ./vendor/bin/".basename(__FILE__)." 'App\\UI\\Forms\\LoginForm'\n";
+    echo "  ./vendor/bin/".basename(__FILE__)." 'Company\\Project\\Cards\\ProductCard'\n\n";
     echo "Важно:\n";
     echo "  • Composer.json должен содержать PSR-4 автозагрузку\n";
     echo "  • Имя класса должно соответствовать PSR-стандартам\n";
