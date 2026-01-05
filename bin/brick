@@ -113,6 +113,8 @@ class ComponentCreator
             // Создание структуры директорий
             $componentDir = $this->createDirectoryStructure($baseDir, $componentName);
 
+            $namespace = $namespace.'\\'.$componentName;
+
             // Создание файлов компонента
             $this->createClassFile($componentDir, $namespace, $componentName);
             $this->createTemplateFile($componentDir, $namespace, $componentName);
