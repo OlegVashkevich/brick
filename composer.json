@@ -1,6 +1,6 @@
 {
     "name": "olegv/brick",
-    "description": "Простая библиотека для создания ui-компонентов на PHP с типизацией и композицией",
+    "description": "Инструмент для создания строго типизированных UI-компонентов на PHP",
     "type": "library",
     "keywords": ["component", "ui", "template", "php", "brick", "компоненты"],
     "homepage": "https://github.com/OlegVashkevich/brick",
