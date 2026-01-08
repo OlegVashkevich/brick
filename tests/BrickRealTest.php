@@ -11,7 +11,6 @@ use OlegV\Tests\Components\Card\Card;
 use OlegV\Tests\Components\InvalidComponent\InvalidComponent;
 use OlegV\Tests\Components\PrimaryButton\PrimaryButton;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 
 // Подключаем реальные компоненты
 require_once __DIR__.'/Components/Button/Button.php';
@@ -35,10 +34,9 @@ class BrickRealTest extends TestCase
 
     public function testComponentWithoutTemplateThrowsException(): void
     {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('template.php не найден');
-
-        new InvalidComponent();
+        $result = new InvalidComponent();
+        // Проверяем возвращаемое значение
+        $this->assertEquals('<!-- Brick component not found -->', $result);
     }
 
     public function testComponentWithValidTemplate(): void
@@ -87,7 +85,7 @@ class BrickRealTest extends TestCase
     public function testCssAndJsAssets(): void
     {
         // Создаем компонент для регистрации асетов
-        new Button();
+        echo new Button();
 
         $css = BrickManager::getInstance()->renderCss();
         $js = BrickManager::getInstance()->renderJs();
@@ -106,9 +104,9 @@ class BrickRealTest extends TestCase
     public function testMultipleComponentsShareAssets(): void
     {
         // Создаем компоненты
-        new Button();
-        new PrimaryButton();
-        new Card();
+        echo new Button();
+        echo new PrimaryButton();
+        echo new Card();
 
         $css = BrickManager::getInstance()->renderCss();
         $js = BrickManager::getInstance()->renderJs();
@@ -121,7 +119,7 @@ class BrickRealTest extends TestCase
 
     public function testClearMethod(): void
     {
-        new Button();
+        echo new Button();
 
         $statsBefore = count(BrickManager::getInstance()->getFullInfo());
         $this->assertGreaterThan(0, $statsBefore);
@@ -196,8 +194,8 @@ class BrickRealTest extends TestCase
 
     public function testCssInheritanceAndOverride(): void
     {
-        new Button();
-        new PrimaryButton();
+        echo new Button();
+        echo new PrimaryButton();
 
         $css = BrickManager::getInstance()->renderCss();
 
@@ -211,7 +209,7 @@ class BrickRealTest extends TestCase
 
     public function testJsInheritance(): void
     {
-        new Button();
+        echo new Button();
         $js = BrickManager::getInstance()->renderJs();
 
         $this->assertStringContainsString('Button clicked:', $js);
@@ -247,7 +245,7 @@ class BrickRealTest extends TestCase
 
     public function testCardCssAssets(): void
     {
-        new Card();
+        echo new Card();
         $css = BrickManager::getInstance()->renderCss();
 
         $this->assertStringContainsString('.card {', $css);
@@ -257,9 +255,9 @@ class BrickRealTest extends TestCase
 
     public function testRenderAllAssets(): void
     {
-        new Button();
-        new PrimaryButton();
-        new Card();
+        echo new Button();
+        echo new PrimaryButton();
+        echo new Card();
 
         $assets = BrickManager::getInstance()->renderAssets();
 

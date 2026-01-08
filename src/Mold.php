@@ -27,16 +27,6 @@ use Throwable;
 trait Mold
 {
     /**
-     * Автоматически инициализирует компонент
-     * через BrickManager.
-     */
-    public function __construct()
-    {
-        $manager = BrickManager::getInstance();
-        $this->initialize($manager);
-    }
-
-    /**
      * Метод инициализации который может быть заменен трейтами.
      * По умолчанию вызывает стандартный метод initializeComponent
      * @param  BrickManager  $manager
@@ -119,6 +109,11 @@ trait Mold
      */
     public function renderOriginal(): string
     {
+        print_r('tt0');
+        // Ленивая инициализация при первом рендере
+        $manager = BrickManager::getInstance();
+        $this->initialize($manager);
+
         ob_start();
         try {
             $className = static::class;

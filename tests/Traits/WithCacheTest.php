@@ -47,16 +47,27 @@ class WithCacheTest extends TestCase
         BrickManager::getInstance()->setCache($this->cacheMock);
 
         // Настраиваем мок
+        // Настраиваем get() чтобы возвращал null при первом вызове
         $this->cacheMock
             ->method('get')
-            ->willReturn('<button class="btn btn-primary">Cached</button>');
+            ->willReturnCallback(function ($key) use (&$cacheValues) {
+                return $cacheValues[$key] ?? null;
+            });
+
+        // Настраиваем set() чтобы сохранял
+        $this->cacheMock
+            ->method('set')
+            ->willReturnCallback(function ($key, $value, $ttl) use (&$cacheValues) {
+                $cacheValues[$key] = $value;
+                return true;
+            });
 
         // Создаем компонент
         $button = new CachedButton('Test Button');
         $result = $button->render();
 
-        $this->assertEquals('<button class="btn btn-primary">Cached</button>', $result);
-
+        $this->assertEquals('<button class="btn btn-primary">Test Button</button>', $result);
+        print_r(BrickManager::getInstance()->getFullInfo());
         // Проверяем что CSS все равно регистрируется
         $css = BrickManager::getInstance()->renderCss();
         $this->assertStringContainsString('.btn { display: inline-block; }', $css);

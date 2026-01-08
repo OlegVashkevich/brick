@@ -12,7 +12,5 @@ readonly class Card extends Brick
         public string $title = '',
         public string $content = '',
         public string $footer = '',
-    ) {
-        parent::__construct();
-    }
+    ) {}
 }

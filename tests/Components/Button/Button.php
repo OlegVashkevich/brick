@@ -16,7 +16,5 @@ readonly class Button extends Brick
         public string $text = 'Click me',
         public string $variant = 'primary',
         public bool $disabled = false,
-    ) {
-        parent::__construct();
-    }
+    ) {}
 }

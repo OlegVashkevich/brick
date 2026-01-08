@@ -7,10 +7,8 @@ namespace OlegV\Tests\Traits;
 use OlegV\BrickManager;
 use OlegV\Tests\Components\Button\Button;
 use OlegV\Tests\Components\Card\Card;
-use OlegV\Tests\Components\InvalidComponent\InvalidComponent;
 use OlegV\Tests\Components\PrimaryButton\PrimaryButton;
 use PHPUnit\Framework\TestCase;
-use RuntimeException;
 
 // Подключаем реальные компоненты
 require_once __DIR__.'/../Components/Button/Button.php';
@@ -80,8 +78,8 @@ class WithInheritanceTest extends TestCase
     public function testCssInheritanceAndOverride(): void
     {
         // Создаем оба компонента для регистрации CSS
-        new Button();
-        new PrimaryButton();
+        echo new Button();
+        echo new PrimaryButton();
 
         $css = BrickManager::getInstance()->renderCss();
 
@@ -108,7 +106,7 @@ class WithInheritanceTest extends TestCase
 
     public function testJsInheritance(): void
     {
-        new Button();
+        echo new Button();
         $js = BrickManager::getInstance()->renderJs();
 
         $this->assertStringContainsString('Button clicked:', $js);
@@ -144,7 +142,7 @@ class WithInheritanceTest extends TestCase
 
     public function testCardCssAssets(): void
     {
-        new Card();
+        echo new Card();
         $css = BrickManager::getInstance()->renderCss();
 
         $this->assertStringContainsString('.card {', $css);
@@ -155,9 +153,9 @@ class WithInheritanceTest extends TestCase
     public function testRenderAllAssets(): void
     {
         // Создаем все компоненты
-        new Button();
-        new PrimaryButton();
-        new Card();
+        echo new Button();
+        echo new PrimaryButton();
+        echo new Card();
 
         $assets = BrickManager::getInstance()->renderAssets();
 
@@ -166,13 +164,5 @@ class WithInheritanceTest extends TestCase
         $this->assertStringContainsString('.btn {', $assets);
         $this->assertStringContainsString('.card {', $assets);
         $this->assertStringContainsString('DOMContentLoaded', $assets);
-    }
-
-    public function testComponentWithoutTemplateThrowsException(): void
-    {
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('template.php не найден');
-
-        new InvalidComponent();
     }
 }

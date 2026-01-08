@@ -120,9 +120,9 @@ class PerformanceTest extends TestCase
     {
         // Создаем много компонентов
         for ($i = 0; $i < 50; $i++) {
-            new Button("Button $i");
-            new PrimaryButton("Primary $i");
-            new Card("Card $i", "Content $i");
+            echo new Button("Button $i");
+            echo new PrimaryButton("Primary $i");
+            echo new Card("Card $i", "Content $i");
         }
 
         // Рендерим ассеты
