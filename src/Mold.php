@@ -27,6 +27,20 @@ use Throwable;
 trait Mold
 {
     /**
+     * Метод подготовки данных для рендеринга компонента
+     *
+     * Метод автоматически вызывается перед подключением шаблона и используется для:
+     * - Заполнения свойств компонента данными из внешних источников
+     * - Выполнения расчетов и преобразований данных
+     * - Инициализации зависимостей компонента
+     *
+     * Используйте этот метод вместо конструктора для всех подготовительных операций.
+     *
+     * @return void
+     */
+    protected function prepare(): void {}
+
+    /**
      * Метод инициализации который может быть заменен трейтами.
      * По умолчанию вызывает стандартный метод initializeComponent
      * @param  BrickManager  $manager
@@ -100,6 +114,9 @@ trait Mold
             return $this->renderOriginal();
         } catch (RenderException|ComponentNotFoundException $e) {
             return $e->toHtml();
+        } catch (Throwable $e) {
+            trigger_error($e->getMessage(), E_USER_WARNING);
+            return '';
         }
     }
 
@@ -115,6 +132,7 @@ trait Mold
 
         ob_start();
         try {
+            $this->prepare();
             $className = static::class;
             $manager = BrickManager::getInstance();
             $cached = $manager->getMemoizedComponent($className);
