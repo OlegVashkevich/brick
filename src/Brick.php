@@ -35,7 +35,6 @@ namespace OlegV;
  *         public string $text,
  *         public string $variant = 'primary'
  *     ) {
- *         parent::__construct(); // Автоматически находит файлы в Button/
  *     }
  * }
  *

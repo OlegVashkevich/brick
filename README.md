@@ -50,7 +50,6 @@ namespace PSR4Path\HelloWorld;
 readonly class HelloWorld extends \OlegV\Brick
 {
     public function __construct(public string $name) {
-        parent::__construct();
     }
 }
 ```

@@ -109,7 +109,6 @@ trait Mold
      */
     public function renderOriginal(): string
     {
-        print_r('tt0');
         // Ленивая инициализация при первом рендере
         $manager = BrickManager::getInstance();
         $this->initialize($manager);
